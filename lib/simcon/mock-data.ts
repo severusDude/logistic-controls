@@ -1,7 +1,13 @@
-import type { Device, NavItem, TerminalEntry } from "@/lib/dashboard/types";
+import type { Device, NavItem, TerminalEntry } from "@/lib/simcon/types";
 
 export const navItems: NavItem[] = [
-  { id: "overview", label: "Control Overview", shortLabel: "OV", href: "#", active: true },
+  {
+    id: "overview",
+    label: "Control Overview",
+    shortLabel: "OV",
+    href: "#",
+    active: true,
+  },
   { id: "fleet", label: "Fleet Matrix", shortLabel: "FM", href: "#" },
   { id: "routes", label: "Routing Engine", shortLabel: "RE", href: "#" },
   { id: "alerts", label: "Alert Queue", shortLabel: "AQ", href: "#" },
@@ -86,7 +92,8 @@ export const terminalEntries: TerminalEntry[] = [
     timestamp: "16:02:14.223",
     category: "HEARTBEAT",
     level: "success",
-    message: "TRK-204 heartbeat stable. telemetry delta within nominal bounds.",
+    message:
+      "TRK-204 heartbeat stable. telemetry delta within nominal bounds.",
     deviceId: "TRK-204",
   },
   {
@@ -94,7 +101,8 @@ export const terminalEntries: TerminalEntry[] = [
     timestamp: "16:02:17.118",
     category: "SCAN_EVT",
     level: "info",
-    message: "SCN-118 requested cooldown override from lane orchestration service.",
+    message:
+      "SCN-118 requested cooldown override from lane orchestration service.",
     deviceId: "SCN-118",
     badge: "QUEUED",
   },
@@ -120,7 +128,8 @@ export const terminalEntries: TerminalEntry[] = [
     timestamp: "16:02:24.556",
     category: "SCAN_EVT",
     level: "error",
-    message: "SCN-044 command timeout. reboot rail locked until manual clearance.",
+    message:
+      "SCN-044 command timeout. reboot rail locked until manual clearance.",
     deviceId: "SCN-044",
     badge: "BLOCKED",
   },
@@ -129,7 +138,8 @@ export const terminalEntries: TerminalEntry[] = [
     timestamp: "16:02:28.882",
     category: "SYS",
     level: "info",
-    message: "Route allocator synced 14 active lanes to control plane shadow cache.",
+    message:
+      "Route allocator synced 14 active lanes to control plane shadow cache.",
     deviceId: "GTW-07",
   },
 ];
