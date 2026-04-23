@@ -40,6 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+/generated/prisma
+
 # ai-plugins
 .agents/
 .codex/
