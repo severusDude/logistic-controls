@@ -1,26 +1,101 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-canvas: #06111f;
+  --bg-shell: linear-gradient(180deg, #0a1a30 0%, #07111d 100%);
+  --bg-panel: rgba(7, 19, 36, 0.88);
+  --bg-panel-strong: rgba(10, 24, 43, 0.96);
+  --bg-panel-soft: rgba(13, 29, 49, 0.74);
+  --bg-row: rgba(12, 25, 43, 0.75);
+  --bg-row-active: linear-gradient(90deg, rgba(29, 94, 168, 0.48), rgba(12, 27, 46, 0.9));
+  --line-subtle: rgba(149, 176, 214, 0.12);
+  --line-strong: rgba(149, 176, 214, 0.28);
+  --line-accent: rgba(78, 166, 255, 0.6);
+  --ink-strong: #edf5ff;
+  --ink-soft: #adc1de;
+  --ink-muted: #7388a7;
+  --signal-online: #35d7a6;
+  --signal-warning: #ffbf47;
+  --signal-offline: #ff6b7f;
+  --signal-info: #55b5ff;
+  --signal-neutral: #a9bbd8;
+  --signal-terminal: #02070d;
+  --shadow-panel: 0 24px 60px rgba(0, 0, 0, 0.34);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--bg-canvas);
+  --color-foreground: var(--ink-strong);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.12), transparent 24%),
+    var(--bg-canvas);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-geist-sans), sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(85, 181, 255, 0.28);
+  color: white;
+}
+
+.dashboard-grid {
+  background-image:
+    linear-gradient(rgba(101, 129, 166, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(101, 129, 166, 0.08) 1px, transparent 1px);
+  background-position: center;
+  background-size: 28px 28px;
+}
+
+.scanline::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    transparent 32%,
+    transparent 68%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+}
+
+.panel-enter {
+  animation: panel-enter 450ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
