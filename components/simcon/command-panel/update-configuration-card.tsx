@@ -58,7 +58,7 @@ export function UpdateConfigurationCard({ device }: { device: Device }) {
   return (
     <CommandCard
       title="Configuration uplink"
-      accentClassName="h-1.5 w-full bg-gradient-to-r from-sky-300/80 to-cyan-300/20"
+      tone="primary"
       icon={<Boxes className="size-5 text-sky-100" />}
     >
       <form
@@ -78,7 +78,7 @@ export function UpdateConfigurationCard({ device }: { device: Device }) {
               name="role"
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="h-11 w-full rounded-2xl border-white/10 bg-black/10 text-white shadow-none">
+                  <SelectTrigger className="h-10 w-full rounded-lg border-[var(--line-subtle)] bg-black/10 text-white shadow-none">
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
                   <SelectContent className="border-white/10 bg-[var(--bg-panel-strong)] text-white">
@@ -101,7 +101,7 @@ export function UpdateConfigurationCard({ device }: { device: Device }) {
           >
             <Input
               {...form.register("facilityId")}
-              className="h-11 rounded-2xl border-white/10 bg-black/10 text-white shadow-none"
+              className="h-10 rounded-lg border-[var(--line-subtle)] bg-black/10 text-white shadow-none"
             />
           </Field>
           <Field
@@ -110,11 +110,11 @@ export function UpdateConfigurationCard({ device }: { device: Device }) {
           >
             <Input
               {...form.register("locationZone")}
-              className="h-11 rounded-2xl border-white/10 bg-black/10 text-white shadow-none"
+              className="h-10 rounded-lg border-[var(--line-subtle)] bg-black/10 text-white shadow-none"
             />
           </Field>
         </div>
-        <Button className="h-11 rounded-2xl bg-sky-300/12 text-sky-50 hover:bg-sky-300/20">
+        <Button className="h-10 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-sky-400/90">
           Push updated config
         </Button>
       </form>
@@ -142,9 +142,9 @@ function Field({
 
 function InfoBlock({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/8 bg-black/10 p-3">
-      <MonoLabel className="text-[10px] tracking-[0.24em]">{label}</MonoLabel>
-      <p className="mt-2 text-sm font-medium text-[var(--ink-soft)]">{value}</p>
+    <div className="rounded-lg border border-[var(--line-subtle)] bg-black/10 p-3">
+      <MonoLabel>{label}</MonoLabel>
+      <p className="mt-1 text-sm font-medium text-[var(--ink-soft)]">{value}</p>
     </div>
   );
 }

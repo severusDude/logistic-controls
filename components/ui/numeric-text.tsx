@@ -6,7 +6,10 @@ export function NumericText({
 }: React.ComponentProps<"span">) {
   return (
     <span
-      className={cn("font-mono text-[13px] tracking-[0.08em]", className)}
+      className={cn(
+        "font-mono text-[14px] font-semibold tracking-[0.02em] tabular-nums",
+        className,
+      )}
       {...props}
     />
   );

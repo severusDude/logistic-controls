@@ -6,61 +6,64 @@
 
 :root {
   --font-geist-sans:
-    "Segoe UI Variable Text", "Segoe UI", "Aptos", "Helvetica Neue", sans-serif;
+    Inter, "Segoe UI Variable Text", "Segoe UI", "Aptos", "Helvetica Neue",
+    sans-serif;
   --font-geist-mono:
-    "Cascadia Code", "Consolas", "SFMono-Regular", "Liberation Mono", monospace;
-  --bg-canvas: #06111f;
-  --bg-shell: linear-gradient(180deg, #0a1a30 0%, #07111d 100%);
-  --bg-panel: rgba(7, 19, 36, 0.88);
-  --bg-panel-strong: rgba(10, 24, 43, 0.96);
-  --bg-panel-soft: rgba(13, 29, 49, 0.74);
-  --bg-row: rgba(12, 25, 43, 0.75);
-  --bg-row-active: linear-gradient(90deg, rgba(29, 94, 168, 0.48), rgba(12, 27, 46, 0.9));
-  --line-subtle: rgba(149, 176, 214, 0.12);
-  --line-strong: rgba(149, 176, 214, 0.28);
-  --line-accent: rgba(78, 166, 255, 0.6);
-  --ink-strong: #edf5ff;
-  --ink-soft: #adc1de;
-  --ink-muted: #7388a7;
-  --signal-online: #35d7a6;
-  --signal-warning: #ffbf47;
-  --signal-offline: #ff6b7f;
-  --signal-info: #55b5ff;
-  --signal-neutral: #a9bbd8;
-  --signal-terminal: #02070d;
-  --shadow-panel: 0 24px 60px rgba(0, 0, 0, 0.34);
-  --background: #06111f;
-  --foreground: #edf5ff;
-  --card: rgba(10, 24, 43, 0.94);
-  --card-foreground: #edf5ff;
-  --popover: rgba(9, 21, 37, 0.98);
-  --popover-foreground: #edf5ff;
-  --primary: #55b5ff;
-  --primary-foreground: #03111d;
-  --secondary: rgba(83, 124, 177, 0.14);
-  --secondary-foreground: #edf5ff;
-  --muted: rgba(103, 132, 171, 0.12);
-  --muted-foreground: #adc1de;
-  --accent: rgba(84, 174, 255, 0.12);
-  --accent-foreground: #edf5ff;
-  --destructive: #ff6b7f;
-  --border: rgba(149, 176, 214, 0.16);
-  --input: rgba(149, 176, 214, 0.18);
-  --ring: rgba(85, 181, 255, 0.45);
-  --chart-1: #55b5ff;
-  --chart-2: #35d7a6;
-  --chart-3: #ffbf47;
-  --chart-4: #ff6b7f;
-  --chart-5: #a9bbd8;
-  --radius: 0.625rem;
-  --sidebar: rgba(7, 19, 36, 0.92);
-  --sidebar-foreground: #edf5ff;
-  --sidebar-primary: #55b5ff;
-  --sidebar-primary-foreground: #03111d;
-  --sidebar-accent: rgba(83, 124, 177, 0.14);
-  --sidebar-accent-foreground: #edf5ff;
-  --sidebar-border: rgba(149, 176, 214, 0.16);
-  --sidebar-ring: rgba(85, 181, 255, 0.45);
+    "Space Grotesk", "Cascadia Code", "Consolas", "SFMono-Regular",
+    "Liberation Mono", monospace;
+  --bg-canvas: #0b1326;
+  --bg-shell: linear-gradient(180deg, #0b1326 0%, #060e20 100%);
+  --bg-panel: #131b2e;
+  --bg-panel-strong: #171f33;
+  --bg-panel-soft: #222a3d;
+  --bg-row: #131b2e;
+  --bg-row-hover: #171f33;
+  --bg-row-active: linear-gradient(90deg, rgba(56, 189, 248, 0.14), #171f33 72%);
+  --line-subtle: #3e484f;
+  --line-strong: #87929a;
+  --line-accent: #38bdf8;
+  --ink-strong: #dae2fd;
+  --ink-soft: #bdc8d1;
+  --ink-muted: #87929a;
+  --signal-online: #4edea3;
+  --signal-warning: #ffc174;
+  --signal-offline: #ffb4ab;
+  --signal-info: #8ed5ff;
+  --signal-neutral: #bdc8d1;
+  --signal-terminal: #020617;
+  --shadow-panel: 0 0 0 1px rgba(62, 72, 79, 0.35);
+  --background: #0b1326;
+  --foreground: #dae2fd;
+  --card: #131b2e;
+  --card-foreground: #dae2fd;
+  --popover: #171f33;
+  --popover-foreground: #dae2fd;
+  --primary: #38bdf8;
+  --primary-foreground: #00354a;
+  --secondary: #00a572;
+  --secondary-foreground: #00311f;
+  --muted: #171f33;
+  --muted-foreground: #bdc8d1;
+  --accent: #f59e0b;
+  --accent-foreground: #613b00;
+  --destructive: #93000a;
+  --border: #3e484f;
+  --input: #3e484f;
+  --ring: rgba(56, 189, 248, 0.55);
+  --chart-1: #38bdf8;
+  --chart-2: #00a572;
+  --chart-3: #f59e0b;
+  --chart-4: #93000a;
+  --chart-5: #87929a;
+  --radius: 0.25rem;
+  --sidebar: #131b2e;
+  --sidebar-foreground: #dae2fd;
+  --sidebar-primary: #38bdf8;
+  --sidebar-primary-foreground: #00354a;
+  --sidebar-accent: #171f33;
+  --sidebar-accent-foreground: #dae2fd;
+  --sidebar-border: #3e484f;
+  --sidebar-ring: rgba(56, 189, 248, 0.55);
 }
 
 @theme inline {
@@ -98,13 +101,13 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.75rem;
+  --radius-3xl: 1rem;
+  --radius-4xl: 1.25rem;
 }
 
 * {
@@ -113,8 +116,8 @@
 
 html {
   background:
-    radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.12), transparent 24%),
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(0, 165, 114, 0.08), transparent 18%),
     var(--bg-canvas);
 }
 
@@ -122,6 +125,7 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--font-geist-sans), sans-serif;
+  overflow-x: hidden;
 }
 
 a {
@@ -142,10 +146,10 @@ select {
 
 .dashboard-grid {
   background-image:
-    linear-gradient(rgba(101, 129, 166, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(101, 129, 166, 0.08) 1px, transparent 1px);
+    linear-gradient(rgba(62, 72, 79, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(62, 72, 79, 0.2) 1px, transparent 1px);
   background-position: center;
-  background-size: 28px 28px;
+  background-size: 24px 24px;
 }
 
 .scanline::after {
@@ -155,10 +159,10 @@ select {
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.015) 0%,
     transparent 32%,
     transparent 68%,
-    rgba(255, 255, 255, 0.02) 100%
+    rgba(255, 255, 255, 0.012) 100%
   );
 }
 
@@ -186,5 +190,10 @@ select {
   }
   html {
     @apply font-sans;
+  }
+  input,
+  textarea,
+  select {
+    @apply text-sm;
   }
 }

@@ -12,15 +12,15 @@ export function TopBar({
   sidebarTrigger?: React.ReactNode;
 }) {
   return (
-    <header className="flex flex-col gap-4 border-b border-[var(--line-subtle)] px-4 py-4 md:flex-row md:items-center md:justify-between md:px-5">
+    <header className="flex flex-col gap-3 border-b border-[var(--line-subtle)] px-3 py-3 md:flex-row md:items-center md:justify-between md:px-4">
       <div className="flex items-center gap-3">
         <div className="lg:hidden">{sidebarTrigger}</div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-sky-400/30 bg-sky-400/10 text-lg font-semibold text-sky-100">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-sky-400/30 bg-sky-400/10 text-base font-semibold text-sky-100">
           LC
         </div>
         <div>
-          <MonoLabel className="tracking-[0.35em]">Logistic Controls</MonoLabel>
-          <h1 className="text-lg font-semibold tracking-[0.08em] text-white md:text-xl">
+          <MonoLabel>Logistic Controls</MonoLabel>
+          <h1 className="text-lg font-semibold tracking-[-0.01em] text-white md:text-xl">
             Fleet Command Dashboard
           </h1>
         </div>
@@ -41,7 +41,7 @@ export function TopBar({
           </IconButton>
           <Button
             variant="destructive"
-            className="rounded-2xl border border-rose-400/30 bg-rose-400/10 px-4 text-rose-100 hover:bg-rose-400/20"
+            className="rounded-lg border border-rose-400/30 bg-transparent px-3 text-rose-100 hover:bg-rose-400/20"
           >
             Halt noncritical
           </Button>
@@ -53,8 +53,8 @@ export function TopBar({
 
 function TopPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2">
-      <MonoLabel className="text-[10px] tracking-[0.24em]">{label}</MonoLabel>
+    <div className="rounded-lg border border-[var(--line-subtle)] bg-[var(--bg-panel-soft)] px-2.5 py-1.5">
+      <MonoLabel className="text-[11px]">{label}</MonoLabel>
       <p className="text-sm font-medium text-white">{value}</p>
     </div>
   );
@@ -62,7 +62,7 @@ function TopPill({ label, value }: { label: string; value: string }) {
 
 export function SidebarMenuButton() {
   return (
-    <IconButton aria-label="Open sidebar" className="rounded-2xl">
+    <IconButton aria-label="Open sidebar" className="rounded-lg">
       <Menu />
     </IconButton>
   );

@@ -67,7 +67,7 @@ export function SimconDashboard({
                   <Button
                     variant="outline"
                     size="icon"
-                    className="rounded-2xl border-white/10 bg-white/5 text-[var(--ink-soft)] hover:bg-white/10 lg:hidden"
+                    className="rounded-lg border-[var(--line-subtle)] bg-transparent text-[var(--ink-soft)] hover:border-[var(--line-accent)] hover:bg-[color:rgba(56,189,248,0.08)] lg:hidden"
                   />
                 }
               >
@@ -87,10 +87,10 @@ export function SimconDashboard({
           }
         />
       }
-      sidebar={<div className="hidden lg:block"><SideNav navItems={navItems} /></div>}
+      sidebar={<div className="hidden h-full lg:block"><SideNav navItems={navItems} /></div>}
     >
       <HeroStrip devices={devices} />
-      <section className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+      <section className="grid gap-3 md:min-h-0 md:flex-1 md:grid-rows-[minmax(0,1fr)] xl:grid-cols-[1.1fr_0.9fr]">
         <DeviceTable
           devices={visibleDevices}
           selectedDeviceId={selectedId}
@@ -129,14 +129,14 @@ function HeroStrip({ devices }: { devices: Device[] }) {
       {stats.map((stat, index) => (
         <div
           key={stat.label}
-          className="panel-enter rounded-[24px] border border-white/10 bg-[var(--bg-panel-soft)] p-4"
+          className="panel-enter rounded-xl border border-[var(--line-subtle)] bg-[var(--bg-panel-soft)] p-3"
           style={{ animationDelay: `${index * 90}ms` }}
         >
           <div className="flex items-center gap-2">
             <BarChart3 className="size-4 text-sky-100" />
             <MonoLabel>{stat.label}</MonoLabel>
           </div>
-          <p className={`mt-3 text-2xl font-semibold tracking-[0.08em] ${stat.tone}`}>
+          <p className={`mt-2 text-2xl font-semibold tracking-[-0.02em] ${stat.tone}`}>
             {stat.value}
           </p>
         </div>

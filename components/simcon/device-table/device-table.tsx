@@ -23,14 +23,14 @@ export function DeviceTable({
   onToggleSelected: () => void;
 }) {
   return (
-    <SectionCard className="min-h-[420px] overflow-hidden" contentClassName="px-0 pb-0">
+    <SectionCard className="min-h-0 overflow-hidden" contentClassName="flex min-h-0 flex-1 flex-col px-0 pb-0">
       <DeviceTableToolbar
         showOffline={showOffline}
         showOnlySelected={showOnlySelected}
         onToggleOffline={onToggleOffline}
         onToggleSelected={onToggleSelected}
       />
-      <div className="overflow-auto">
+      <div className="min-h-0 flex-1 overflow-auto">
         <Table>
           <DeviceTableHeader />
           <TableBody>

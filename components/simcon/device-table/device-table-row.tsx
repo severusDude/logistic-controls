@@ -32,37 +32,37 @@ export function DeviceTableRow({
     <TableRow
       data-state={selected ? "selected" : "idle"}
       className={cn(
-        "cursor-pointer border-white/6 bg-[var(--bg-row)] transition hover:bg-white/[0.04] data-[state=selected]:bg-[var(--bg-row-active)]",
+        "h-8 cursor-pointer border-white/6 bg-[var(--bg-row)] transition hover:bg-[var(--bg-row-hover)] data-[state=selected]:bg-[var(--bg-row-active)]",
       )}
       onClick={onClick}
     >
-      <TableCell className="px-4 py-4 align-top">
-        <div className="flex items-center gap-3">
+      <TableCell className="px-4 py-2.5 align-middle">
+        <div className="flex items-center gap-2">
           <StatusDot status={device.status} pulse={device.status === "online"} />
           <span className="truncate font-semibold tracking-[0.08em] text-white">
             {device.id}
           </span>
           <Badge
             className={cn(
-              "rounded-full border-0 px-2 py-1 text-[10px] font-medium capitalize",
+              "rounded-full border-0 px-2 py-0.5 text-[10px] font-medium capitalize",
               chipTone[device.status],
             )}
           >
             {device.status}
           </Badge>
         </div>
-        <p className="mt-2 text-xs uppercase tracking-[0.18em] text-[var(--ink-muted)]">
+        <p className="mt-1 text-xs uppercase tracking-[0.05em] text-[var(--ink-muted)]">
           {device.role} / {device.type} / gps {device.hasGps ? "on" : "off"}
         </p>
       </TableCell>
-      <TableCell className="px-4 py-4 align-top">
+      <TableCell className="px-4 py-2.5 align-middle">
         <p className="truncate font-medium text-[var(--ink-soft)]">{device.facility}</p>
-        <p className="mt-2 truncate text-xs text-[var(--ink-muted)]">{device.zone}</p>
+        <p className="mt-1 truncate text-xs text-[var(--ink-muted)]">{device.zone}</p>
       </TableCell>
-      <TableCell className="px-4 py-4 align-top">
+      <TableCell className="px-4 py-2.5 align-middle">
         <NumericText className="text-[var(--ink-soft)]">{device.throughput}</NumericText>
       </TableCell>
-      <TableCell className="px-4 py-4 align-top">
+      <TableCell className="px-4 py-2.5 align-middle">
         <NumericText className={textTone[device.status]}>{device.lastBeat}</NumericText>
       </TableCell>
     </TableRow>

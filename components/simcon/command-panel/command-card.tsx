@@ -8,30 +8,41 @@ import { MonoLabel } from "@/components/ui/mono-label";
 
 export function CommandCard({
   title,
-  accentClassName,
+  tone,
   icon,
   children,
 }: {
   title: string;
-  accentClassName: string;
+  tone: "primary" | "secondary" | "tertiary" | "error";
   icon: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const railTone = {
+    primary: "bg-[var(--primary)]",
+    secondary: "bg-[var(--secondary)]",
+    tertiary: "bg-[var(--accent)]",
+    error: "bg-[var(--destructive)]",
+  }[tone];
+
   return (
-    <Card className="overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] py-0 text-white ring-0">
-      <div className={accentClassName} />
-      <CardHeader className="px-4 pt-4 pb-0">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
-            {icon}
-          </div>
-          <div>
-            <MonoLabel>Module</MonoLabel>
-            <CardTitle className="mt-1 text-lg text-white">{title}</CardTitle>
-          </div>
+    <Card className="overflow-hidden rounded-lg border border-[var(--line-subtle)] bg-[var(--bg-panel-soft)] py-0 text-white ring-0">
+      <div className="grid min-h-0 grid-cols-[4px_1fr]">
+        <div className={railTone} />
+        <div className="min-w-0">
+          <CardHeader className="px-3 pt-3 pb-0">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--line-subtle)] bg-black/10">
+                {icon}
+              </div>
+              <div>
+                <MonoLabel>Module</MonoLabel>
+                <CardTitle className="mt-1 text-base text-white">{title}</CardTitle>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="px-3 pt-3 pb-3">{children}</CardContent>
         </div>
-      </CardHeader>
-      <CardContent className="px-4 pt-4 pb-4">{children}</CardContent>
+      </div>
     </Card>
   );
 }

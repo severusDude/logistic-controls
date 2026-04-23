@@ -10,20 +10,23 @@ import { UpdateConfigurationCard } from "@/components/simcon/command-panel/updat
 export function DeviceCommandPanel({ device }: { device: Device }) {
   return (
     <SectionCard
-      className="min-h-[420px] bg-[var(--bg-panel-strong)]"
-      contentClassName="flex h-full flex-col gap-4"
+      className="min-h-0 bg-[var(--bg-panel-strong)]"
+      contentClassName="flex min-h-0 flex-1 flex-col"
     >
-      <PanelHeader
-        eyebrow="Command deck"
-        title={device.id}
-        description={`${device.facility} / ${device.zone}`}
-        action={<ConnectionBadge status={device.connectionStatus} />}
-      />
-      <Separator className="bg-white/10" />
-      <div className="grid gap-4">
-        <UpdateConfigurationCard device={device} />
-        <TimingParamsCard device={device} />
-        <ImmediateExecutionCard />
+      <div className="shrink-0">
+        <PanelHeader
+          title={device.id}
+          description={`${device.facility} / ${device.zone}`}
+          action={<ConnectionBadge status={device.connectionStatus} />}
+        />
+        <Separator className="mt-3 bg-white/10" />
+      </div>
+      <div className="mt-3 min-h-0 flex-1 overflow-auto pr-1">
+        <div className="grid gap-3">
+          <UpdateConfigurationCard device={device} />
+          <TimingParamsCard device={device} />
+          <ImmediateExecutionCard />
+        </div>
       </div>
     </SectionCard>
   );

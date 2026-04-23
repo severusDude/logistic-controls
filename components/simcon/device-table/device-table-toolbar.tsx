@@ -16,10 +16,9 @@ export function DeviceTableToolbar({
   onToggleSelected: () => void;
 }) {
   return (
-    <div className="border-b border-[var(--line-subtle)] px-4 py-4">
+    <div className="border-b border-[var(--line-subtle)] px-3 py-3">
       <PanelHeader
-        eyebrow="Device matrix"
-        title="Site endpoints"
+        title="Devices List"
         action={
           <div className="flex items-center gap-2">
             <IconButton aria-label="Refresh endpoints">
@@ -31,7 +30,7 @@ export function DeviceTableToolbar({
           </div>
         }
       />
-      <div className="mt-4 flex flex-wrap gap-5">
+      <div className="mt-3 flex flex-wrap gap-4">
         <div className="flex items-center gap-2">
           <Checkbox
             checked={showOffline}
@@ -46,7 +45,9 @@ export function DeviceTableToolbar({
             onCheckedChange={onToggleSelected}
             aria-label="Focus selected device"
           />
-          <Label className="text-sm text-[var(--ink-soft)]">Focus selection</Label>
+          <Label className="text-sm text-[var(--ink-soft)]">
+            Focus selection
+          </Label>
         </div>
       </div>
     </div>

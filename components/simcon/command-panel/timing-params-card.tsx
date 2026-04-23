@@ -44,7 +44,7 @@ export function TimingParamsCard({ device }: { device: Device }) {
   return (
     <CommandCard
       title="Timing parameters"
-      accentClassName="h-1.5 w-full bg-gradient-to-r from-emerald-300/80 to-teal-300/20"
+      tone="secondary"
       icon={<Activity className="size-5 text-emerald-100" />}
     >
       <form
@@ -61,7 +61,7 @@ export function TimingParamsCard({ device }: { device: Device }) {
           <Input
             type="number"
             {...form.register("scanCooldown", { valueAsNumber: true })}
-            className="h-11 rounded-2xl border-white/10 bg-black/10 text-white shadow-none"
+            className="h-10 rounded-lg border-[var(--line-subtle)] bg-black/10 text-white shadow-none"
           />
           {form.formState.errors.scanCooldown ? (
             <p className="text-xs text-rose-200">
@@ -72,7 +72,7 @@ export function TimingParamsCard({ device }: { device: Device }) {
         <InlineNote tone="success">
           Cooldown rail clamps duplicate scan bursts during lane congestion and mesh retries.
         </InlineNote>
-        <Button className="h-11 rounded-2xl bg-emerald-300/12 text-emerald-50 hover:bg-emerald-300/20">
+        <Button className="h-10 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:brightness-110">
           Sync timing window
         </Button>
       </form>
@@ -82,9 +82,9 @@ export function TimingParamsCard({ device }: { device: Device }) {
 
 function InfoBlock({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/8 bg-black/10 p-3">
-      <MonoLabel className="text-[10px] tracking-[0.24em]">{label}</MonoLabel>
-      <p className="mt-2 text-sm font-medium text-[var(--ink-soft)]">{value}</p>
+    <div className="rounded-lg border border-[var(--line-subtle)] bg-black/10 p-3">
+      <MonoLabel>{label}</MonoLabel>
+      <p className="mt-1 text-sm font-medium text-[var(--ink-soft)]">{value}</p>
     </div>
   );
 }

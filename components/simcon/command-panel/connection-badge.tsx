@@ -4,17 +4,17 @@ import type { ConnectionStatus } from "@/lib/simcon/types";
 import { cn } from "@/lib/utils";
 
 const connectionBadgeVariants = cva(
-  "rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em]",
+  "rounded-full border px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.05em]",
   {
     variants: {
       status: {
         connected:
-          "bg-emerald-400/14 text-emerald-100 ring-1 ring-emerald-400/25",
+          "border-emerald-400/20 bg-emerald-400/10 text-emerald-100",
         degraded:
-          "bg-amber-300/14 text-amber-100 ring-1 ring-amber-300/25",
+          "border-amber-300/20 bg-amber-300/10 text-amber-100",
         rebuilding:
-          "bg-sky-300/14 text-sky-100 ring-1 ring-sky-300/25",
-        offline: "bg-rose-400/14 text-rose-100 ring-1 ring-rose-400/25",
+          "border-sky-300/20 bg-sky-300/10 text-sky-100",
+        offline: "border-rose-300/20 bg-rose-300/10 text-rose-100",
       },
     },
   },

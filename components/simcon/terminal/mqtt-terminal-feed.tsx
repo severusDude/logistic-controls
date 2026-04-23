@@ -16,8 +16,8 @@ export function MqttTerminalFeed({
 }) {
   return (
     <SectionCard
-      className="min-h-[280px] bg-[#02070d]"
-      contentClassName="flex h-full flex-col px-0 pb-0"
+      className="min-h-[240px] bg-[#020617] md:h-[30dvh] md:max-h-[320px]"
+      contentClassName="flex min-h-0 flex-1 flex-col px-0 pb-0"
     >
       <TerminalToolbar
         paused={paused}

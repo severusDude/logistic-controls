@@ -6,9 +6,9 @@ const iconButtonVariants = cva("", {
   variants: {
     tone: {
       default:
-        "border-white/10 bg-white/5 text-[var(--ink-soft)] hover:bg-white/10 hover:text-white",
+        "border-[var(--line-subtle)] bg-transparent text-[var(--ink-soft)] hover:border-[var(--line-accent)] hover:bg-[color:rgba(56,189,248,0.08)] hover:text-white",
       active:
-        "border-sky-300/30 bg-sky-300/12 text-sky-50 hover:bg-sky-300/18",
+        "border-[var(--line-accent)] bg-[color:rgba(56,189,248,0.1)] text-sky-50 hover:bg-[color:rgba(56,189,248,0.16)]",
     },
   },
   defaultVariants: {
@@ -26,7 +26,7 @@ export function IconButton({
       size="icon"
       variant="outline"
       className={cn(
-        "rounded-2xl shadow-none",
+        "rounded-lg shadow-none",
         iconButtonVariants({ tone }),
         className,
       )}

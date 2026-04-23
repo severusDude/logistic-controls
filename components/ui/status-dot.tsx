@@ -2,7 +2,7 @@ import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import type { DeviceStatus } from "@/lib/simcon/types";
 
-const statusDotVariants = cva("inline-flex rounded-full", {
+const statusDotVariants = cva("inline-flex rounded-full ring-1 ring-black/20", {
   variants: {
     status: {
       online: "bg-[var(--signal-online)]",
@@ -15,8 +15,8 @@ const statusDotVariants = cva("inline-flex rounded-full", {
       false: "",
     },
     size: {
-      sm: "size-2",
-      md: "size-2.5",
+      sm: "size-1.5",
+      md: "size-2",
     },
   },
   defaultVariants: {

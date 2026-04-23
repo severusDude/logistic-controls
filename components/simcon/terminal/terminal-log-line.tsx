@@ -21,7 +21,7 @@ const dotStatus: Record<TerminalLevel, "idle" | "online" | "warning" | "offline"
 
 export function TerminalLogLine({ entry }: { entry: TerminalEntry }) {
   return (
-    <div className="grid gap-3 border-b border-white/6 py-3 md:grid-cols-[140px_120px_1fr]">
+    <div className="grid gap-3 border-b border-white/6 py-2.5 md:grid-cols-[140px_110px_1fr]">
       <NumericText className="text-[var(--ink-muted)]">{entry.timestamp}</NumericText>
       <div className="flex items-center gap-2">
         <StatusDot status={dotStatus[entry.level]} size="sm" />

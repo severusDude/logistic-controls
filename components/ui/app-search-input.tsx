@@ -11,7 +11,7 @@ export function AppSearchInput({
   return (
     <div
       className={cn(
-        "flex h-11 min-w-[260px] items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 text-[var(--ink-soft)]",
+        "flex h-10 min-w-[260px] items-center gap-2 rounded-lg border border-[var(--line-subtle)] bg-[var(--bg-panel-soft)] px-3 text-[var(--ink-soft)]",
         className,
       )}
     >

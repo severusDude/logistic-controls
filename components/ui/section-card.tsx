@@ -10,12 +10,14 @@ import { cn } from "@/lib/utils";
 export function SectionCard({
   className,
   contentClassName,
+  bodyClassName,
   description,
   title,
   children,
 }: {
   className?: string;
   contentClassName?: string;
+  bodyClassName?: string;
   description?: React.ReactNode;
   title?: React.ReactNode;
   children: React.ReactNode;
@@ -23,12 +25,12 @@ export function SectionCard({
   return (
     <Card
       className={cn(
-        "rounded-[28px] border border-white/10 bg-[var(--bg-panel)] py-0 text-white ring-0",
+        "flex h-full min-h-0 flex-col rounded-xl border border-[var(--line-subtle)] bg-[var(--bg-panel)] py-0 text-white ring-0",
         className,
       )}
     >
       {title || description ? (
-        <CardHeader className="px-4 py-4">
+        <CardHeader className={cn("px-3 py-3", bodyClassName)}>
           {title ? <CardTitle className="text-white">{title}</CardTitle> : null}
           {description ? (
             <CardDescription className="text-[var(--ink-soft)]">
@@ -37,7 +39,7 @@ export function SectionCard({
           ) : null}
         </CardHeader>
       ) : null}
-      <CardContent className={cn("px-4 pb-4", contentClassName)}>
+      <CardContent className={cn("min-h-0 flex-1 px-3 pb-3", contentClassName)}>
         {children}
       </CardContent>
     </Card>
