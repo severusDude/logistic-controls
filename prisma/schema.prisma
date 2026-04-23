@@ -64,6 +64,7 @@ model Facility {
   devices       Device[]
   packages      Package[]
   packageEvents PackageEvent[]
+  unknownScans  UnknownScan[]
   userScopes    UserFacilityScope[]
 }
 
@@ -119,6 +120,7 @@ model Device {
   heartbeats      DeviceHeartbeat[]
   commands        DeviceCommand[]
   alerts          Alert[]
+  unknownScans    UnknownScan[]
 }
 
 model Package {
@@ -251,4 +253,20 @@ model RawMqttEvent {
   ingestedAt    DateTime     @default(now())
 
   @@index([deviceId, ingestedAt(sort: Desc)])
+}
+
+model UnknownScan {
+  id           String    @id @default(cuid())
+  eventId      String?   @unique
+  deviceId     String?
+  facilityId   String?
+  rfidEpc      String
+  reason       String
+  timestampUtc DateTime
+  rawPayload   Json
+  createdAt    DateTime  @default(now())
+  device       Device?   @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  facility     Facility? @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+
+  @@index([rfidEpc, timestampUtc(sort: Desc)])
 }

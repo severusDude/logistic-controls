@@ -189,7 +189,7 @@ async function seedDevelopment(prisma: PrismaClient) {
   );
 }
 
-async function seedProduction(prisma: PrismaClient) {
+async function seedProduction() {
   // Production seeding is intentionally minimal (no test users/packages/devices).
   // Add any essential reference data here if needed (e.g. default roles, system settings).
   console.log("Production environment seeded (minimal configuration)");
@@ -205,7 +205,7 @@ async function main() {
       await seedDevelopment(prisma);
       break;
     case "production":
-      await seedProduction(prisma);
+      await seedProduction();
       break;
     default:
       throw new Error(
