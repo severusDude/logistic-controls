@@ -1,6 +1,3 @@
--- CreateSchema
-CREATE SCHEMA IF NOT EXISTS "public";
-
 -- CreateEnum
 CREATE TYPE "DeviceType" AS ENUM ('mobile', 'fixed');
 
@@ -299,4 +296,3 @@ ALTER TABLE "DeviceCommand" ADD CONSTRAINT "DeviceCommand_deviceId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "DeviceCommand" ADD CONSTRAINT "DeviceCommand_requestedByUserId_fkey" FOREIGN KEY ("requestedByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
