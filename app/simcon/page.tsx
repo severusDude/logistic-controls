@@ -1,12 +1,17 @@
 import { SimconDashboard } from "@/components/simcon/simcon-dashboard";
-import { devices, navItems, terminalEntries } from "@/lib/simcon/mock-data";
+import { getRealtimeSnapshot } from "@/lib/backend/realtime/snapshot";
+import { navItems } from "@/lib/simcon/mock-data";
 
-export default function SimconPage() {
+export const dynamic = "force-dynamic";
+
+export default async function SimconPage() {
+  const snapshot = await getRealtimeSnapshot();
+
   return (
     <SimconDashboard
-      devices={devices}
+      devices={snapshot.devices}
       navItems={navItems}
-      terminalEntries={terminalEntries}
+      terminalEntries={snapshot.terminalEntries}
     />
   );
 }

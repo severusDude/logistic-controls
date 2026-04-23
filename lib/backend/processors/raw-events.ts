@@ -1,4 +1,4 @@
-import { RawEventType } from "@/generated/prisma/client";
+import { Prisma, RawEventType } from "@/generated/prisma/client";
 import { prisma } from "../db/prisma";
 
 type PersistRawEventInput = {
@@ -19,7 +19,7 @@ export async function persistRawEvent(input: PersistRawEventInput) {
       eventType: input.eventType,
       qos: input.qos ?? null,
       retain: input.retain ?? null,
-      payload: input.payload,
+      payload: input.payload as Prisma.InputJsonValue,
       schemaVersion: input.schemaVersion ?? null,
     },
   });

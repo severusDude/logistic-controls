@@ -39,8 +39,8 @@ async function seedDevelopment(prisma: PrismaClient) {
   });
 
   const [operatorPasswordHash, warehousePasswordHash] = await Promise.all([
-    bcrypt.hash("operator123!", process.env.BCRYPT_ROUNDS!),
-    bcrypt.hash("warehouse123!", process.env.BCRYPT_ROUNDS!),
+    bcrypt.hash("operator123!", Number(process.env.BCRYPT_ROUNDS!)),
+    bcrypt.hash("warehouse123!", Number(process.env.BCRYPT_ROUNDS!)),
   ]);
 
   const operator = await prisma.user.upsert({

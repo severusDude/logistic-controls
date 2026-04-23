@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 import process from "node:process";
 import { createSubscriber } from "../lib/backend/mqtt/subscriber";
 import { markOfflineDevices } from "../lib/backend/processors/offline-detector";

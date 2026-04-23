@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { startTransition, useEffect, useEffectEvent, useMemo, useState } from "react";
 import { BarChart3, Menu } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { SideNav } from "@/components/layout/side-nav";
@@ -12,49 +12,95 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Button } from "@/components/ui/button";
 import { MonoLabel } from "@/components/ui/mono-label";
 import type { Device, NavItem, TerminalEntry } from "@/lib/simcon/types";
+import type { RealtimeSnapshot } from "@/lib/backend/realtime/contracts";
 
 type SimconDashboardProps = {
   devices: Device[];
   navItems: NavItem[];
   terminalEntries: TerminalEntry[];
+  realtimeUrl?: string;
 };
 
 export function SimconDashboard({
   devices,
   navItems,
   terminalEntries,
+  realtimeUrl = "/api/realtime/stream",
 }: SimconDashboardProps) {
+  const [liveDevices, setLiveDevices] = useState(devices);
+  const [liveTerminalEntries, setLiveTerminalEntries] = useState(terminalEntries);
   const [selectedId, setSelectedId] = useState(devices[0]?.id ?? "");
   const [showOffline, setShowOffline] = useState(true);
   const [showOnlySelected, setShowOnlySelected] = useState(false);
   const [paused, setPaused] = useState(false);
 
+  const activeSelectedId = useMemo(
+    () =>
+      liveDevices.some((device) => device.id === selectedId)
+        ? selectedId
+        : (liveDevices[0]?.id ?? ""),
+    [liveDevices, selectedId],
+  );
+
   const selectedDevice =
-    devices.find((device) => device.id === selectedId) ?? devices[0];
+    liveDevices.find((device) => device.id === activeSelectedId) ?? liveDevices[0];
+
+  const handleSnapshot = useEffectEvent((snapshot: RealtimeSnapshot) => {
+    startTransition(() => {
+      setLiveDevices(snapshot.devices);
+      setLiveTerminalEntries(snapshot.terminalEntries);
+    });
+  });
+
+  useEffect(() => {
+    const eventSource = new EventSource(realtimeUrl);
+
+    const onSnapshot = (event: MessageEvent<string>) => {
+      try {
+        const snapshot = JSON.parse(event.data) as RealtimeSnapshot;
+        handleSnapshot(snapshot);
+      } catch (error) {
+        console.error("[simcon] Failed to parse realtime snapshot", error);
+      }
+    };
+
+    const onError = (error: Event) => {
+      console.error("[simcon] Realtime stream error", error);
+    };
+
+    eventSource.addEventListener("snapshot", onSnapshot as EventListener);
+    eventSource.addEventListener("error", onError);
+
+    return () => {
+      eventSource.removeEventListener("snapshot", onSnapshot as EventListener);
+      eventSource.removeEventListener("error", onError);
+      eventSource.close();
+    };
+  }, [realtimeUrl]);
 
   const visibleDevices = useMemo(() => {
-    return devices.filter((device) => {
+    return liveDevices.filter((device) => {
       if (!showOffline && device.status === "offline") {
         return false;
       }
 
-      if (showOnlySelected && device.id !== selectedId) {
+      if (showOnlySelected && device.id !== activeSelectedId) {
         return false;
       }
 
       return true;
     });
-  }, [devices, selectedId, showOffline, showOnlySelected]);
+  }, [activeSelectedId, liveDevices, showOffline, showOnlySelected]);
 
   const visibleTerminalEntries = useMemo(() => {
-    return terminalEntries.filter((entry) => {
-      if (showOnlySelected && entry.deviceId !== selectedId) {
+    return liveTerminalEntries.filter((entry) => {
+      if (showOnlySelected && entry.deviceId !== activeSelectedId) {
         return false;
       }
 
       return true;
     });
-  }, [selectedId, showOnlySelected, terminalEntries]);
+  }, [activeSelectedId, liveTerminalEntries, showOnlySelected]);
 
   return (
     <AppShell
@@ -89,11 +135,11 @@ export function SimconDashboard({
       }
       sidebar={<div className="hidden h-full lg:block"><SideNav navItems={navItems} /></div>}
     >
-      <HeroStrip devices={devices} />
+      <HeroStrip devices={liveDevices} />
       <section className="grid gap-3 md:min-h-0 md:flex-1 md:grid-rows-[minmax(0,1fr)] xl:grid-cols-[1.1fr_0.9fr]">
         <DeviceTable
           devices={visibleDevices}
-          selectedDeviceId={selectedId}
+          selectedDeviceId={activeSelectedId}
           showOffline={showOffline}
           showOnlySelected={showOnlySelected}
           onSelectDevice={setSelectedId}
