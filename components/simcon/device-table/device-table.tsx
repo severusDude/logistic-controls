@@ -1,5 +1,6 @@
 import { SectionCard } from "@/components/ui/section-card";
 import { Table, TableBody } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Device } from "@/lib/simcon/types";
 import { DeviceTableHeader } from "@/components/simcon/device-table/device-table-header";
 import { DeviceTableRow } from "@/components/simcon/device-table/device-table-row";
@@ -30,7 +31,7 @@ export function DeviceTable({
         onToggleOffline={onToggleOffline}
         onToggleSelected={onToggleSelected}
       />
-      <div className="min-h-0 flex-1 overflow-auto">
+      <ScrollArea className="min-h-0 flex-1">
         <Table>
           <DeviceTableHeader />
           <TableBody>
@@ -44,7 +45,7 @@ export function DeviceTable({
             ))}
           </TableBody>
         </Table>
-      </div>
+      </ScrollArea>
     </SectionCard>
   );
 }
