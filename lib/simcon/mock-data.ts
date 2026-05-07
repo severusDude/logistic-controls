@@ -1,4 +1,5 @@
 import type { Device, NavItem, TerminalEntry } from "@/lib/simcon/types";
+import type { RealtimePackageEvent } from "@/lib/backend/realtime/contracts";
 
 export const navItems: NavItem[] = [
   {
@@ -141,5 +142,20 @@ export const terminalEntries: TerminalEntry[] = [
     message:
       "Route allocator synced 14 active lanes to control plane shadow cache.",
     deviceId: "GTW-07",
+  },
+];
+
+export const packageEvents: RealtimePackageEvent[] = [
+  {
+    eventId: "mock-pkg-event-1",
+    trackingId: "PKG-20260423-001",
+    status: "picked_up",
+    scanContext: "pickup",
+    deviceId: "TRK-204",
+    facilityCode: "JKT-HUB-02",
+    locationName: "Gate South",
+    lat: -6.21462,
+    lng: 106.84513,
+    timestampUtc: new Date().toISOString(),
   },
 ];

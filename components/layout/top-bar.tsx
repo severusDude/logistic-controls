@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Menu, Settings2 } from "lucide-react";
+import { Bell, Menu, Settings2, Terminal } from "lucide-react";
 import { AppSearchInput } from "@/components/ui/app-search-input";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
@@ -8,8 +8,10 @@ import { MonoLabel } from "@/components/ui/mono-label";
 
 export function TopBar({
   sidebarTrigger,
+  terminalTrigger,
 }: {
   sidebarTrigger?: React.ReactNode;
+  terminalTrigger?: React.ReactNode;
 }) {
   return (
     <header className="flex flex-col gap-3 border-b border-[var(--line-subtle)] px-3 py-3 md:flex-row md:items-center md:justify-between md:px-4">
@@ -39,6 +41,11 @@ export function TopBar({
           <IconButton aria-label="Settings">
             <Settings2 />
           </IconButton>
+          {terminalTrigger ?? (
+            <IconButton aria-label="Open terminal">
+              <Terminal />
+            </IconButton>
+          )}
           <Button
             variant="destructive"
             className="rounded-lg border border-rose-400/30 bg-transparent px-3 text-rose-100 hover:bg-rose-400/20"
