@@ -23,7 +23,7 @@ export function TopBar({
         <div>
           <MonoLabel>Logistic Controls</MonoLabel>
           <h1 className="text-lg font-semibold tracking-[-0.01em] text-white md:text-xl">
-            Fleet Command Dashboard
+            Prototype
           </h1>
         </div>
       </div>
@@ -46,12 +46,6 @@ export function TopBar({
               <Terminal />
             </IconButton>
           )}
-          <Button
-            variant="destructive"
-            className="rounded-lg border border-rose-400/30 bg-transparent px-3 text-rose-100 hover:bg-rose-400/20"
-          >
-            Halt noncritical
-          </Button>
         </div>
       </div>
     </header>
@@ -60,7 +54,7 @@ export function TopBar({
 
 function TopPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-[var(--line-subtle)] bg-[var(--bg-panel-soft)] px-2.5 py-1.5">
+    <div className="rounded-lg border border-[var(--line-subtle)] bg-[var(--bg-panel-soft)] px-2.5 py-1.5 flex items-center gap-2">
       <MonoLabel className="text-[11px]">{label}</MonoLabel>
       <p className="text-sm font-medium text-white">{value}</p>
     </div>

@@ -36,34 +36,13 @@ function SideNavBody({ navItems }: { navItems: NavItem[] }) {
 
   return (
     <>
-      <SidebarHeader>
-        <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-sky-400/30 bg-sky-400/10 text-sm font-semibold text-sky-100">
-            LC
-          </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <MonoLabel>Control cluster</MonoLabel>
-              <h2 className="truncate text-base font-semibold text-white">
-                Java Freight Mesh
-              </h2>
-            </div>
-          )}
-        </div>
-      </SidebarHeader>
       <SidebarContent>
         <ScrollArea className="h-full">
           <div className="grid gap-4 pr-1">
-            {!collapsed && (
-              <div className="rounded-lg border border-[var(--line-subtle)] bg-[var(--bg-panel-soft)] p-3">
-                <p className="text-sm leading-6 text-[var(--ink-soft)]">
-                  Precision board for dock scanners, mobile trucks, and site gateways.
-                </p>
-              </div>
-            )}
             <SidebarMenu aria-label="Primary navigation">
               {navItems.map((item) => {
-                const Icon = navIcons[item.id as keyof typeof navIcons] ?? LayoutDashboard;
+                const Icon =
+                  navIcons[item.id as keyof typeof navIcons] ?? LayoutDashboard;
 
                 return (
                   <SidebarMenuButton
@@ -74,28 +53,13 @@ function SideNavBody({ navItems }: { navItems: NavItem[] }) {
                     title={collapsed ? item.label : undefined}
                   >
                     <Icon className="size-4 shrink-0" />
-                    {!collapsed && <span className="truncate font-medium">{item.label}</span>}
+                    {!collapsed && (
+                      <span className="truncate font-medium">{item.label}</span>
+                    )}
                   </SidebarMenuButton>
                 );
               })}
             </SidebarMenu>
-            {!collapsed && (
-              <div className="rounded-lg border border-[var(--line-subtle)] bg-[#02070d] p-3">
-                <div className="flex items-center gap-2 text-amber-100">
-                  <ShieldAlert className="size-4" />
-                  <MonoLabel className="text-amber-100">Safety rail</MonoLabel>
-                </div>
-                <p className="mt-2 text-sm leading-6 text-[var(--ink-soft)]">
-                  Escalations require dual operator acknowledgment before restart.
-                </p>
-                <Button
-                  variant="outline"
-                  className="mt-4 h-10 w-full rounded-lg border-amber-300/30 bg-transparent text-amber-100 hover:bg-amber-300/18"
-                >
-                  Arm maintenance window
-                </Button>
-              </div>
-            )}
           </div>
         </ScrollArea>
       </SidebarContent>
