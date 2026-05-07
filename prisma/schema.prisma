@@ -1,0 +1,272 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum DeviceType {
+  mobile
+  fixed
+}
+
+enum DeviceStatus {
+  online
+  offline
+  warning
+  idle
+}
+
+enum PackageStatus {
+  registered
+  picked_up
+  in_transit
+  at_hub
+  out_for_delivery
+  delivered
+  exception
+}
+
+enum UserRole {
+  operator
+  warehouse_staff
+}
+
+enum CommandStatus {
+  queued
+  published
+  acked
+  failed
+}
+
+enum AlertSeverity {
+  info
+  warning
+  critical
+}
+
+enum RawEventType {
+  telemetry
+  scan
+  heartbeat
+  cmd
+}
+
+model Facility {
+  id            String              @id @default(cuid())
+  facilityCode  String              @unique
+  name          String
+  locationName  String
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  devices       Device[]
+  packages      Package[]
+  packageEvents PackageEvent[]
+  unknownScans  UnknownScan[]
+  userScopes    UserFacilityScope[]
+}
+
+model User {
+  id                 String              @id @default(cuid())
+  email              String              @unique
+  passwordHash       String
+  role               UserRole
+  displayName        String
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  facilityScopes     UserFacilityScope[]
+  acknowledgedAlerts Alert[]             @relation("AlertAcknowledgedBy")
+  requestedCommands  DeviceCommand[]     @relation("CommandRequestedBy")
+}
+
+model UserFacilityScope {
+  id         String   @id @default(cuid())
+  userId     String
+  facilityId String
+  createdAt  DateTime @default(now())
+  facility   Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, facilityId])
+}
+
+model Device {
+  id              String            @id @default(cuid())
+  deviceId        String            @unique
+  deviceType      DeviceType
+  deviceRole      String
+  facilityId      String?
+  locationName    String?
+  status          DeviceStatus      @default(idle)
+  lastSeenAt      DateTime?
+  lastHeartbeatAt DateTime?
+  lastTelemetryAt DateTime?
+  lastLat         Decimal?          @db.Decimal(9, 6)
+  lastLng         Decimal?          @db.Decimal(9, 6)
+  gpsFix          Boolean?
+  batteryPct      Int?
+  wifiRssi        Int?
+  signalStrength  String?
+  uptimeSec       Int?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  facility        Facility?         @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+  packages        Package[]
+  packageEvents   PackageEvent[]
+  telemetry       DeviceTelemetry[]
+  heartbeats      DeviceHeartbeat[]
+  commands        DeviceCommand[]
+  alerts          Alert[]
+  unknownScans    UnknownScan[]
+}
+
+model Package {
+  id                String         @id @default(cuid())
+  trackingId        String         @unique
+  rfidEpc           String         @unique
+  status            PackageStatus  @default(registered)
+  currentDeviceId   String?
+  currentFacilityId String?
+  lastKnownLat      Decimal?       @db.Decimal(9, 6)
+  lastKnownLng      Decimal?       @db.Decimal(9, 6)
+  lastEventAt       DateTime?
+  eta               DateTime?
+  senderName        String
+  senderAddress     String
+  recipientName     String
+  recipientAddress  String
+  recipientEmail    String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  currentDevice     Device?        @relation(fields: [currentDeviceId], references: [id], onDelete: SetNull)
+  currentFacility   Facility?      @relation(fields: [currentFacilityId], references: [id], onDelete: SetNull)
+  events            PackageEvent[]
+  alerts            Alert[]
+}
+
+model PackageEvent {
+  id           String         @id @default(cuid())
+  eventId      String         @unique
+  packageId    String
+  sourceType   String
+  status       PackageStatus?
+  scanContext  String?
+  deviceId     String?
+  facilityId   String?
+  locationName String?
+  lat          Decimal?       @db.Decimal(9, 6)
+  lng          Decimal?       @db.Decimal(9, 6)
+  timestampUtc DateTime
+  rawPayload   Json
+  createdAt    DateTime       @default(now())
+  device       Device?        @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  facility     Facility?      @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+  package      Package        @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([packageId, timestampUtc(sort: Desc)])
+}
+
+model DeviceTelemetry {
+  id                 String   @id @default(cuid())
+  deviceId           String
+  sequenceNo         Int?
+  timestampUtc       DateTime
+  lat                Decimal  @db.Decimal(9, 6)
+  lng                Decimal  @db.Decimal(9, 6)
+  altitudeM          Float?
+  accuracyM          Float?
+  headingDeg         Float?
+  speedKmh           Float?
+  activePackageCount Int?
+  batteryPct         Int?
+  signalStrength     String?
+  gpsFix             Boolean
+  rawPayload         Json
+  ingestedAt         DateTime @default(now())
+  device             Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId, timestampUtc(sort: Desc)])
+  @@index([deviceId, sequenceNo])
+}
+
+model DeviceHeartbeat {
+  id                   String   @id @default(cuid())
+  deviceId             String
+  timestampUtc         DateTime
+  uptimeSec            Int?
+  statusText           String?
+  rfidReaderStatus     String?
+  gpsFix               Boolean?
+  packagesScannedToday Int?
+  wifiRssi             Int?
+  rawPayload           Json
+  ingestedAt           DateTime @default(now())
+  device               Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId, timestampUtc(sort: Desc)])
+}
+
+model Alert {
+  id                   String        @id @default(cuid())
+  alertId              String        @unique
+  type                 String
+  severity             AlertSeverity
+  deviceId             String?
+  packageId            String?
+  message              String
+  targetRoles          Json
+  isRead               Boolean       @default(false)
+  acknowledgedByUserId String?
+  triggeredAt          DateTime
+  createdAt            DateTime      @default(now())
+  acknowledgedBy       User?         @relation("AlertAcknowledgedBy", fields: [acknowledgedByUserId], references: [id], onDelete: SetNull)
+  device               Device?       @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  package              Package?      @relation(fields: [packageId], references: [id], onDelete: SetNull)
+}
+
+model DeviceCommand {
+  id                String        @id @default(cuid())
+  commandId         String        @unique
+  deviceId          String
+  command           String
+  payload           Json
+  requestedByUserId String?
+  status            CommandStatus @default(queued)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  device            Device        @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  requestedBy       User?         @relation("CommandRequestedBy", fields: [requestedByUserId], references: [id], onDelete: SetNull)
+}
+
+model RawMqttEvent {
+  id            String       @id @default(cuid())
+  topic         String
+  deviceId      String?
+  eventType     RawEventType
+  qos           Int?
+  retain        Boolean?
+  payload       Json
+  schemaVersion String?
+  ingestedAt    DateTime     @default(now())
+
+  @@index([deviceId, ingestedAt(sort: Desc)])
+}
+
+model UnknownScan {
+  id           String    @id @default(cuid())
+  eventId      String?   @unique
+  deviceId     String?
+  facilityId   String?
+  rfidEpc      String
+  reason       String
+  timestampUtc DateTime
+  rawPayload   Json
+  createdAt    DateTime  @default(now())
+  device       Device?   @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  facility     Facility? @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+
+  @@index([rfidEpc, timestampUtc(sort: Desc)])
+}
