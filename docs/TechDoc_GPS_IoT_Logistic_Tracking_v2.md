@@ -2,23 +2,27 @@
 
 ## IoT GPS-Based Logistic Package Tracking System
 
-**Version:** 2.0 (Architecture Revision — Device-Centric RFID Model)
+**Version:** 2.2 (Firmware Modularization — Device-Centric RFID Model + Testable Wokwi Scan Scenarios)
 
 **Audience:** Full-Stack Engineering Team
 
 **Stack:** Node.js + Express · MQTT · WebSocket · React.js
 
-**Date:** April 18, 2026
+**Date:** May 6, 2026
 
 **Scope:** Simulated IoT — Architecture & Design Reference
-
-> **What changed from v1.0:** The previous architecture assigned one GPS simulator per package. This revision replaces that model with a **device-centric architecture** — one IoT device per area or vehicle, aware of its own GPS position and role. Packages carry passive RFID tags and have no sensors of their own. A device detects packages by scanning their RFID tags when they enter its read range, then publishes that event to the platform.
 
 ---
 
 ## Table of Contents
 
 1. [System Overview](#1-system-overview)
+   - [Implementation Status Snapshot - May 6, 2026](#implementation-status-snapshot---may-6-2026)
+   - [Milestones And Verification Tracker](#milestones-and-verification-tracker)
+   - [Firmware Module Layout](#firmware-module-layout)
+   - [Simulated Package Scanning](#simulated-package-scanning)
+   - [Testable Wokwi Scenarios](#testable-wokwi-scenarios)
+   - [Manual-Run Logging And Analyzer](#manual-run-logging-and-analyzer)
 2. [Architecture Principles & Design Decisions](#2-architecture-principles--design-decisions)
 3. [Component Architecture](#3-component-architecture)
 4. [Device Model](#4-device-model)
@@ -70,6 +74,269 @@ In this architecture, **intelligence lives in the device, not the package.** Eac
 │  MQTT Broker (Mosquitto)     │
 └──────────────────────────────┘
 ```
+
+---
+
+## Implementation Status Snapshot - May 6, 2026
+
+This section tracks the real implementation state of the current repository against the architecture described in this document.
+
+| Area                                           | Current State                                                                  | Verification Status                                   | Notes                                                                                                                                                                                   |
+| ---------------------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mobile ESP32 firmware                          | Implemented and modularized                                                     | Passed CLI build and Wokwi boot on May 6, 2026        | Firmware targets one truck/delivery van device using ESP32, GPS, PN532 RFID, WiFi, MQTT, heartbeat, telemetry, scan publishing, command handling, offline buffering, and RFID cooldown. Runtime behavior, MQTT topics, and `log.v1` payloads are unchanged by the module split. |
+| Firmware module layout                         | Implemented                                                                    | `pio run` passed after refactor                       | `src/main.cpp` is now the thin Arduino entrypoint; focused modules own config/state, logging, connectivity/MQTT, telemetry, RFID/package state, Wokwi scenario commands, LEDs, and utilities. |
+| Wokwi simulation wiring                        | Implemented                                                                    | Passed Wokwi CLI boot and custom-chip initialization  | `diagram.json` and `wokwi.toml` define ESP32, custom NEO-6M GPS chip, custom PN532 chip, status LEDs, and generated firmware paths.                                                     |
+| GPS telemetry every 5 seconds                  | Implemented in firmware                                                        | Passed serial-log verification                        | Wokwi logs show consecutive `[TEL]` records with valid GPS fix, coordinates, and speed.                                                                                                  |
+| RFID scan publishing                           | Implemented in firmware                                                        | Passed scenario verification                          | Scenario logs show `[SCAN] Published`, mapped EPCs, scan context, active-package counters, and cooldown suppression.                                                                     |
+| Simulated package scanning                     | Implemented                                                                    | Passed scenario verification                          | Wokwi PN532 card controls expose two simulated package RFID cards: `DEADBEEF` and `CAFEBABE`; both were scanned through PN532 I2C path.                                                  |
+| Wokwi automation scenarios                     | Implemented and adjusted to wait on stable heartbeat output before serial input | All four CLI scenarios passed on May 6, 2026          | Scenario YAML files cover single pickup, two-package pickup, duplicate cooldown, and delivery scan flows. Wokwi CLI requires network/API access and `WOKWI_CLI_TOKEN`.                   |
+| Manual-run serial logging                      | Implemented                                                                    | JSONL analyzer added                                  | Firmware emits `log.v1` JSONL serial events as canonical evidence while retaining optional human serial lines for readability.                                                          |
+| Manual log analyzer                            | Implemented                                                                    | Tool validates saved legacy logs and JSONL samples    | `tools/analyze_logs.py` reads files or stdin, extracts JSONL events, and also parses legacy `[TEL]`, `[SCAN]`, `[RFID]`, `[SCENARIO]`, WiFi, MQTT, and heartbeat lines.                  |
+| MQTT mobile topics                             | Implemented in firmware                                                           | Broker/backend integration unverified                                    | Firmware publishes `telemetry`, `scan`, and `heartbeat`, and subscribes to `cmd` under `logistics/mobile/{device_id}/...`.                                                              |
+| Remote commands                                | Implemented in firmware                                                           | End-to-end command delivery unverified                                   | Supported commands: `update_role`, `force_scan`, `set_cooldown`, and `reboot`.                                                                                                          |
+| Offline event buffer                           | Implemented in firmware                                                           | Reconnect scenario unverified                                            | RAM buffer stores up to 50 events when MQTT publish is unavailable and flushes after reconnect.                                                                                         |
+| Firmware tests                                 | Test harness exists                                                               | Not active in normal boot                                                | `runAllTests()` is present but commented out in `setup()`, so automated runtime tests are not currently executed.                                                                       |
+| PlatformIO build from this shell               | Run with `pio run`                                                               | Tested compiled successfully after modularization     | Build completed successfully; build constants remain wrapped with `#ifndef` so PlatformIO build flags can override firmware defaults. Re-run after any firmware module change.             |
+| Wokwi CLI Simulation verification              | Ran Wokwi CLI boot and scenario commands                                         | Success                                               | Logged serial output from mobile device setup, WiFi, MQTT, GPS, RFID reader, heartbeat, telemetry, scan publish, and cooldown behavior.                                                  |
+| Fixed device simulator                         | Not implemented in this repo                                                      | Not started                                                              | Architecture describes fixed readers, but current repo contains only mobile-device firmware/simulation assets.                                                                          |
+| Backend, frontend, database, broker deployment | Not implemented in this repo                                                      | Not started                                                              | Node/Express backend, React dashboard, PostgreSQL/PostGIS, Mosquitto deployment, RFID Event Processor, and Device Registry are architecture targets, not current repository code.       |
+
+---
+
+## Milestones And Verification Tracker
+
+| Milestone                                  | Status                                      | Evidence                                                                                                                     | Update Rule                                                                        |
+| ------------------------------------------ | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| M1 - Firmware compiles from current source | Passed on May 6, 2026                       | `pio run` completed successfully from the modularized source tree.                                                             | Re-run after firmware changes.                                                     |
+| M2 - Wokwi boots firmware                  | Passed on May 6, 2026                       | Wokwi CLI logs show boot, GPS UART init, PN532 firmware detection, WiFi connect, MQTT connect, heartbeat, and setup complete. | Re-run after firmware, chip, or diagram changes.                                   |
+| M3 - GPS telemetry                         | Passed on May 6, 2026                       | Serial logs show consecutive `[TEL]` events every 5 seconds with `fix=YES`, lat/lng, and speed.                               | Re-run after GPS chip or telemetry payload changes.                                |
+| M4 - PN532/RFID scan                       | Passed on May 6, 2026                       | Scenario logs show UID detection, EPC mapping, `[SCAN] Published`, context, and active-package count.                         | Re-run after RFID firmware or PN532 chip changes.                                  |
+| M5 - MQTT connectivity                     | Passed by serial evidence on May 6, 2026    | Logs show WiFi connected, MQTT connected, command-topic subscription, heartbeat publish, telemetry publish, and scan publish. | Broker subscriber payload capture still recommended for backend integration.        |
+| M6 - Remote command handling               | Implemented, pending command round trip     | Firmware contains handlers for `update_role`, `force_scan`, `set_cooldown`, and `reboot`; no inbound MQTT command was tested. | Mark pass after a command round trip is captured.                                  |
+| M7 - Backend integration                   | Not started in this repo                    | Backend subscriber receives firmware MQTT payloads and persists or broadcasts events.                                        | Mark pass only after backend component exists and consumes real firmware payloads. |
+| M8 - Full architecture MVP                 | Not started in this repo                    | Backend, frontend, database, broker, fixed device, and mobile device run together.                                           | Mark pass after end-to-end package tracking scenario works across all layers.      |
+| M9 - Wokwi pickup package 1 scenario       | Passed on May 6, 2026                       | `logs/wokwi-pickup-package-1-2026-05-06-final.log` captures package 1 EPC, `CTX=pickup`, and `ACTIVE=1`.                      | Re-run after scenario, firmware, or PN532 chip changes.                            |
+| M10 - Wokwi pickup two packages scenario   | Passed on May 6, 2026                       | `logs/wokwi-pickup-two-packages-2026-05-06-fixed2.log` captures both package EPCs and `ACTIVE=2`.                            | Re-run after scenario, firmware, or PN532 chip changes.                            |
+| M11 - Wokwi duplicate cooldown scenario    | Passed on May 6, 2026                       | `logs/wokwi-duplicate-cooldown-2026-05-06-fixed.log` captures package 1 scan followed by `in cooldown - suppressed`.          | Re-run after cooldown logic changes.                                               |
+| M12 - Wokwi delivery package 1 scenario    | Passed on May 6, 2026                       | `logs/wokwi-delivery-package-1-2026-05-06-fixed.log` captures package 1 EPC, `CTX=delivered`, and `ACTIVE=0`.                  | Re-run after scenario, firmware, or PN532 chip changes.                            |
+
+### Firmware Module Layout
+
+The mobile firmware is split into focused modules for readability while preserving the public device contract. `src/main.cpp` now only owns Arduino setup and loop orchestration.
+
+| Module | Responsibility |
+| ------ | -------------- |
+| `include/firmware_config.h` | Build-flag defaults for identity, credentials, pins, intervals, and logging flags. |
+| `include/firmware_state.h` + `src/firmware_state.cpp` | Shared runtime state, topic buffers, hardware clients, counters, timers, event buffer, and simulated package manifest. |
+| `src/logging.cpp` | `log.v1` JSONL serial logging, setup events, simple events, and state snapshots. |
+| `src/connectivity.cpp` | MQTT topic setup, WiFi/MQTT connection management, remote commands, publish buffering, and buffer flushing. |
+| `src/telemetry.cpp` | Telemetry, heartbeat, and RFID scan-event JSON payload publishing. |
+| `src/rfid.cpp` | PN532 scan handling, RFID cooldown, simulated UID-to-EPC mapping, scan context resolution, and package counters. |
+| `src/scenario.cpp` | Serial-only Wokwi scenario commands including status, force scan, context arming, and reset. |
+| `src/leds.cpp` | WiFi, MQTT, RFID, and GPS LED status behavior. |
+| `src/utils.cpp` | Scan event ID and timestamp helpers. |
+
+### Verification Commands
+
+Compile project
+
+```powershell
+pio run
+```
+
+Custom chip workflow:
+
+```powershell
+wokwi-cli chip compile chips/pn532.chip.c -o chips/pn532.chip.wasm
+wokwi-cli chip compile chips/gps-neo6m.chip.c -o chips/gps-neo6m.chip.wasm
+pio run
+```
+
+Running simulation
+
+```powershell
+wokwi-cli . --timeout 10000 --serial-log-file "logs/wokwi-cli-$(Get-Date -Format 'yyyy-MM-dd_HHmm').log"
+```
+
+Running simulated package scenarios:
+
+```powershell
+wokwi-cli . --timeout 45000 --scenario scenarios/pickup-package-1.yaml --serial-log-file logs/wokwi-pickup-package-1-2026-05-06-final.log
+wokwi-cli . --timeout 60000 --scenario scenarios/pickup-two-packages.yaml --serial-log-file logs/wokwi-pickup-two-packages-2026-05-06-fixed2.log
+wokwi-cli . --timeout 45000 --scenario scenarios/duplicate-cooldown.yaml --serial-log-file logs/wokwi-duplicate-cooldown-2026-05-06-fixed.log
+wokwi-cli . --timeout 45000 --scenario scenarios/delivery-package-1.yaml --serial-log-file logs/wokwi-delivery-package-1-2026-05-06-fixed.log
+```
+
+Captured CLI evidence from May 6, 2026:
+
+- Build output succeeds from the current source tree.
+- Wokwi serial logs include boot, GPS init, PN532 init, WiFi/MQTT status, heartbeat, and telemetry.
+- Scenario logs include scan publish lines, EPC mapping for both simulated package cards, scenario contexts, active package counters, and duplicate cooldown suppression.
+- Optional MQTT subscriber capture of raw JSON payloads is still recommended before backend integration.
+
+### Manual-Run Logging And Analyzer
+
+Firmware serial output now has a machine-readable source of truth. Each important event emits one JSON object per line when `LOG_JSONL=1`:
+
+```json
+{"log_type":"iot_device","schema":"log.v1","ts":"2026-05-06T08:10:00.000Z","uptime_ms":12345,"level":"INFO","event":"telemetry","device_id":"DEV-TRUCK-001","seq":42}
+```
+
+Common fields:
+
+| Field | Meaning |
+| ----- | ------- |
+| `log_type` | Fixed value `iot_device`, used by tooling to identify firmware records. |
+| `schema` | Current serial log schema, `log.v1`. |
+| `ts` | GPS UTC timestamp when available, otherwise firmware fallback timestamp. |
+| `uptime_ms` | Device uptime in milliseconds at emission time. |
+| `level` | `INFO`, `WARN`, or `ERROR`. |
+| `event` | Stable event name for analysis. |
+| `device_id` | Firmware device identity. |
+| `seq` | Monotonic serial-log event sequence. |
+
+Canonical event names:
+
+| Event | Key event fields |
+| ----- | ---------------- |
+| `boot` | firmware version, schema version, role, facility, location, logging flags. |
+| `setup_step` | setup step name and status for LEDs, topics, GPS UART, PN532, setup completion. |
+| `wifi_status` | connection status, SSID, IP, RSSI, retry interval. |
+| `mqtt_status` | broker host/port, connection status, client ID, subscribed topic, failure code. |
+| `heartbeat` | publish result, uptime, WiFi/MQTT/GPS status, package scan counter, RSSI. |
+| `telemetry` | publish result, telemetry sequence, GPS fix/position/speed, active package count. |
+| `rfid_scan` | EPC, UID, scan context, active package count, daily scan count. |
+| `rfid_cooldown` | EPC, UID, cooldown window, suppression flag. |
+| `scan_publish` | event ID, EPC, context, publish/buffer result, topic, buffer size. |
+| `buffer_event` | buffer action, topic, QoS, size, flush/drop state. |
+| `cmd_received` | MQTT command source, command ID, command name, parse or size errors. |
+| `scenario_command` | serial scenario command, arm/reset/force-scan/status outcome. |
+| `scenario_result` | EPC, UID, scan context, active package count, consumed flag. |
+| `state_snapshot` | WiFi/MQTT/GPS/RFID/package counters, buffer size, telemetry and scan sequences. |
+
+Build flags:
+
+```ini
+-DLOG_JSONL=1
+-DLOG_HUMAN=1
+```
+
+`LOG_JSONL=1` is the default and should stay enabled for manual verification. `LOG_HUMAN=1` keeps the short legacy lines useful during live serial monitoring. Set `-DLOG_HUMAN=0` for cleaner JSONL-only capture.
+
+Manual status snapshot:
+
+```text
+STATUS
+```
+
+Send `STATUS` over the serial monitor or Wokwi scenario input to emit one `state_snapshot` JSONL event with WiFi, MQTT, GPS, RFID cooldown map size, package counters, telemetry/scan sequences, and buffer size.
+
+Analyze a saved log:
+
+```powershell
+python tools/analyze_logs.py logs/wokwi-pickup-package-1-2026-05-06-final.log
+```
+
+Analyze piped serial output:
+
+```powershell
+Get-Content logs\manual.log | python tools/analyze_logs.py -
+```
+
+Manual collection workflow:
+
+```powershell
+pio run
+wokwi-cli . --timeout 60000 --serial-log-file "logs/manual-$(Get-Date -Format 'yyyy-MM-dd_HHmm').log"
+python tools/analyze_logs.py logs/manual-YYYY-MM-DD_HHmm.log
+```
+
+When Wokwi CLI token quota is unavailable, run the project manually in Wokwi or VS Code, copy the serial monitor output into `logs/manual.log`, then run the analyzer. The analyzer accepts both new JSONL events and older concatenated human lines such as `[HB]...0s[MOBILE]...`.
+
+Assumptions:
+
+- This document must not claim backend or full-stack completion until those components exist in the repository or a linked implementation.
+
+---
+
+## Simulated Package Scanning
+
+Version 2.1 adds deterministic simulated package scanning for Wokwi. The simulation still exercises the PN532 RFID path instead of bypassing the reader in firmware.
+
+### Simulated Package Manifest
+
+| Wokwi PN532 Card | UID Hex    | Simulated Package EPC          |
+| ---------------- | ---------- | ------------------------------ |
+| Package 1 card   | `DEADBEEF` | `LOG-PKG-20260506-JKTWH-00001` |
+| Package 2 card   | `CAFEBABE` | `LOG-PKG-20260506-JKTWH-00002` |
+
+Unknown card UIDs retain the fallback EPC format `LOG-{UID_HEX}`.
+
+### Scenario Control Path
+
+```text
+Wokwi scenario YAML
+  -> set-control pn532.card1/card2/reset
+  -> PN532 custom chip exposes virtual card UID
+  -> ESP32 firmware reads PN532 over I2C
+  -> firmware maps UID to package EPC
+  -> firmware publishes/logs scan payload with selected scan_context
+```
+
+The PN532 custom chip exposes these controls:
+
+| Control | Values     | Purpose                                                |
+| ------- | ---------- | ------------------------------------------------------ |
+| `card1` | `0` or `1` | Remove or place simulated package 1 in the RFID field. |
+| `card2` | `0` or `1` | Remove or place simulated package 2 in the RFID field. |
+| `reset` | `0` or `1` | Clear the active RFID field in the PN532 chip.         |
+
+### Serial Scenario Commands
+
+The firmware accepts serial-only commands for Wokwi test automation:
+
+| Command               | Effect                                                                                       |
+| --------------------- | -------------------------------------------------------------------------------------------- |
+| `SCENARIO PICKUP`     | Arms the next RFID scan with `scan_context = "pickup"`.                                      |
+| `SCENARIO IN_TRANSIT` | Arms the next RFID scan with `scan_context = "in_transit"`.                                  |
+| `SCENARIO DELIVERED`  | Arms the next RFID scan with `scan_context = "delivered"`.                                   |
+| `SCENARIO RESET`      | Clears scenario context, RFID cooldowns, simulated onboard package state, and scan counters. |
+| `FORCE_SCAN`          | Clears RFID cooldown and immediately attempts one RFID scan.                                 |
+
+If no scenario context is armed, the firmware preserves its existing GPS-speed fallback: stationary scans resolve to `pickup`, moving scans resolve to `in_transit`.
+
+### Counter Rules
+
+| Scan Context              | Counter Behavior                                                                      |
+| ------------------------- | ------------------------------------------------------------------------------------- |
+| `pickup`                  | Increments `active_package_count` once per known package that is not already onboard. |
+| `in_transit`              | Leaves `active_package_count` unchanged.                                              |
+| `delivered`               | Decrements `active_package_count` only when the known package is onboard.             |
+| Duplicate within cooldown | Suppresses scan and logs `in cooldown - suppressed`; counters are unchanged.          |
+
+---
+
+## Testable Wokwi Scenarios
+
+| Scenario File                        | Purpose                                                                | Expected Serial Evidence                                                                         |
+| ------------------------------------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `scenarios/pickup-package-1.yaml`    | Validate a single pickup scan for package 1.                           | `[SCENARIO] EPC=LOG-PKG-20260506-JKTWH-00001`, `[SCENARIO] CTX=pickup`, `[SCENARIO] ACTIVE=1`    |
+| `scenarios/pickup-two-packages.yaml` | Validate two different package pickups with field reset between cards. | Package 1 EPC, package 2 EPC, `[SCENARIO] ACTIVE=2`                                              |
+| `scenarios/duplicate-cooldown.yaml`  | Validate duplicate suppression when the same card remains in field.    | Package 1 EPC, then `in cooldown - suppressed`                                                   |
+| `scenarios/delivery-package-1.yaml`  | Validate delivery scan context for package 1.                          | `[SCENARIO] EPC=LOG-PKG-20260506-JKTWH-00001`, `[SCENARIO] CTX=delivered`, `[SCENARIO] ACTIVE=0` |
+
+Scenario mechanics use Wokwi automation scenario steps and custom chip controls:
+
+- [Wokwi Automation Scenarios](https://docs.wokwi.com/wokwi-ci/automation-scenarios)
+- [Wokwi Custom Chip Controls](https://docs.wokwi.com/chips-api/chip-json/)
+- [Wokwi Attributes API](https://docs.wokwi.com/chips-api/attributes/)
+
+Scenario YAML waits on `[HB] Heartbeat published. Uptime: 0s`, then delays 500ms before writing serial commands. This avoids a flaky wait on the setup-complete line, which can be joined to the first telemetry line in Wokwi serial output.
+
+Custom chip rule:
+
+- Any edit to `chips/pn532.chip.c` or `chips/gps-neo6m.chip.c` must be followed by recompiling the matching `.wasm` file before running Wokwi.
+- After recompiling a chip, rebuild the firmware with `pio run` so the project artifact and simulation inputs stay aligned.
 
 ---
 
@@ -972,6 +1239,6 @@ No device can publish to another device's topics or subscribe to the full broker
 ---
 
 _Document Owner: Engineering Team_
-_Version: 2.0 — replaces v1.0 (per-package GPS simulator model)_
+_Version: 2.2 — replaces v1.0 (per-package GPS simulator model)_
 _Related Document: PRD — GPS-Based Logistic Package Tracking System MVP v1.0_
 _Next Review: After device simulator implementation kickoff_
