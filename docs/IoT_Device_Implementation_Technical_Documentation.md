@@ -486,7 +486,7 @@ rfid_epc received
 | Alert Engine              | missing scans, exceptions, geofence, delivered alerts    |
 | Geofence Evaluator        | PostGIS point-in-polygon checks                          |
 | Auto ID Service           | generate/validate devices, packages, RFID EPCs, events   |
-| REST API                  | CRUD packages/devices/geofences/routes/users             |
+| REST API                  | package CRUD plus device/raw-event/timeline endpoints; geofence, route, user management remain future work |
 | WebSocket Server          | live telemetry/package/alert push                        |
 | RBAC Middleware           | scope API + WebSocket access                             |
 

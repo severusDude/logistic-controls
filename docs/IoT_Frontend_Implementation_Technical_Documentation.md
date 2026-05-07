@@ -4,12 +4,17 @@
 **Document date:** May 7, 2026
 **Source basis:** Current repository scan, `PRD_GPS_Logistic_Package_Tracking_MVP.md`, `IoT_Device_Implementation_Technical_Documentation.md`, and Next.js 16 local docs under `node_modules/next/dist/docs/`.
 **Frontend scope in this document:** Next.js App Router UI, SimCon dashboard, client-side command forms, realtime SSE consumption, and UI requirement coverage.
+**Research scope note:** This document follows `PRD_GPS_Logistic_Package_Tracking_MVP.md` v2.0 research scope.
 
 ---
 
 ## 1. Executive Summary
 
-The current frontend is an operational control dashboard focused on IoT device monitoring and remote command dispatch. It is not yet the full PRD shipment tracking dashboard. The implemented UI centers on a SimCon device command console rather than package map tracking.
+The current frontend is a research SimCon dashboard for device/event observation and optional remote command dispatch. It supports the PRD v2.0 proof path:
+
+```text
+RFID/GPS device event -> MQTT -> worker/backend -> database -> API/dashboard
+```
 
 Current implemented frontend capabilities:
 
@@ -21,15 +26,13 @@ Current implemented frontend capabilities:
 - Form validation shared with backend Zod schemas for command payloads.
 - Fixed-device command controls are intentionally disabled in the UI because backend command publishing currently supports mobile devices only.
 
-Major frontend gaps against the PRD:
+Current frontend gaps for research completion:
 
-- No live package map is implemented.
-- No marker clustering, geofence polygon rendering, or visual geofence breach state exists.
-- No package management CRUD UI exists.
-- No public tracking page exists.
-- No login, RBAC-aware layouts, operator view, warehouse view, or customer view exists.
-- No alert center behavior exists beyond static notification/settings icons.
-- No package timeline UI exists, though a backend timeline API exists.
+- Final `/simcon` screenshot and scenario evidence still need to be collected.
+- SSE update behavior needs final proof or explicit partial-status note.
+- Command panel API result is optional and needs evidence only if included in the report.
+- Package timeline UI is not required because API evidence is enough for PRD v2.0, but can be added later if report evidence needs a visible UI.
+- Package map, geofence UI, alert center, auth/RBAC views, and public tracking remain future work. Internal package CRUD is in PRD v2.0 scope but not implemented yet.
 
 ---
 
@@ -78,18 +81,17 @@ Current frontend follows this split:
 | `/api/realtime/stream` | `app/api/realtime/stream/route.ts` | SSE endpoint polled by dashboard client. Emits `snapshot` events when backend watermarks change. | Implemented |
 | `/api/devices/:deviceId/commands/:command` | `app/api/devices/[deviceId]/commands/[command]/route.ts` | Command POST target used by command forms. | Implemented backend endpoint, consumed by UI |
 
-Routes required by PRD but not present:
+Pending or deferred UI routes:
 
-| Required UI | PRD source | Current state |
-|---|---|---|
-| Login | FR-RBAC-05, UX inventory | Not implemented |
-| Operator Dashboard with live map | FR-MAP, UX inventory | Not implemented |
-| Package Detail Modal | FR-MAP-03, FR-TL | Not implemented |
-| Package Management | FR-PKG | Not implemented |
-| Warehouse View | FR-RBAC-03, UX inventory | Not implemented |
-| Alert Center | FR-ALT | Not implemented |
-| Public Tracking Page | FR-PKG-05, End Customer stories | Not implemented |
-| Simulation Control Panel for packages/routes | UX inventory, FR-SIM | Not implemented |
+| Deferred UI | Reason |
+|---|---|
+| Login/auth shell | Auth/RBAC is out of research implementation scope. |
+| Operator live package map | Live map is future work; coordinates/API evidence are sufficient. |
+| Package detail modal | Optional; package timeline API is enough for report verification. |
+| Package management | Internal package CRUD/search/status override is in scope but not implemented yet. |
+| Warehouse/customer views | Multi-role and public tracking flows are out of scope. |
+| Alert center | Alert workflow is future work. |
+| Simulation package/route panel | Route/ETA/geofence simulation is out of scope. |
 
 ---
 
@@ -207,7 +209,7 @@ Partially implemented:
 - Hero strip calculates online/warning/offline counts from live devices, but `Lane throughput` is static.
 - Terminal pause flag affects toolbar state but incoming SSE updates still replace `liveTerminalEntries`; there is no buffering or suppression in `SimconDashboard`.
 
-Not implemented:
+Pending or future UI work:
 
 - Map canvas or map library integration.
 - Package marker display.
@@ -215,7 +217,7 @@ Not implemented:
 - Geofence drawing.
 - Package timeline UI.
 - Public package tracking form/page.
-- CRUD package forms.
+- Package CRUD forms, table/search, detail, assignment, and status override.
 - Operator/warehouse/customer role-based layout switching.
 - Authentication pages or session-aware navigation.
 - Alert list, unread count, acknowledgement, dismissal.
@@ -271,68 +273,24 @@ Defined in `lib/backend/realtime/contracts.ts`:
 
 ---
 
-## 9. PRD Functional Requirement Coverage - Frontend
-
-### 9.1 GPS Simulation Engine Requirements
+## 9. PRD v2 Functional Requirement Coverage - Frontend
 
 | ID | Frontend state | Coverage |
 |---|---|---|
-| FR-SIM-01 | No package simulation control UI. Device telemetry display exists through backend snapshot. | Not fulfilled |
-| FR-SIM-02 | No waypoint/route UI. | Not fulfilled |
-| FR-SIM-03 | UI table can render multiple devices, but no package fleet simulation UI exists. | Not fulfilled |
-| FR-SIM-04 | No speed profile controls. | Not fulfilled |
-| FR-SIM-05 | Frontend consumes REST/SSE APIs, not WebSocket. No package simulation API consumption. | Partially fulfilled |
+| FR-UI-01 | `/simcon` renders DB-backed device rows with status, role/type/GPS, facility/zone, heartbeat age, and connection state. | Implemented |
+| FR-UI-02 | Terminal feed renders recent raw MQTT events mapped from backend snapshot. | Implemented |
+| FR-UI-03 | `/simcon` consumes `/api/realtime/stream` through `EventSource`; backend sends polling SSE snapshots. | Partial; needs final evidence |
+| FR-UI-04 | Package timeline API exists on backend; no frontend timeline is required for PRD v2.0 report if API evidence is captured. | Backend implemented, frontend optional |
+| FR-UI-05 | Command forms post optional mobile commands to backend. | Partial/optional |
+| FR-UI-06 | Internal package management screens are planned for package table/search, create/edit, detail, device/facility assignment, and status override. | In scope, pending UI |
 
-### 9.2 Real-Time Map Requirements
+Out-of-scope frontend items for PRD v2.0:
 
-| ID | Frontend state | Coverage |
-|---|---|---|
-| FR-MAP-01 | No map component. | Not fulfilled |
-| FR-MAP-02 | SSE refresh is 2 seconds, but applies to device dashboard, not map markers. | Not fulfilled for map |
-| FR-MAP-03 | Device row selection exists; package marker detail panel does not. | Not fulfilled |
-| FR-MAP-04 | No map zoom/pan/cluster support. | Not fulfilled |
-| FR-MAP-05 | No geofence polygon UI. | Not fulfilled |
-| FR-MAP-06 | No geofence breach visual state. | Not fulfilled |
-
-### 9.3 Status Timeline Requirements
-
-| ID | Frontend state | Coverage |
-|---|---|---|
-| FR-TL-01 | Backend has package timeline API; no frontend timeline component. | Not fulfilled in frontend |
-| FR-TL-02 | Status values exist in Prisma and package API; not rendered in UI. | Not fulfilled in frontend |
-| FR-TL-03 | No package current-status detail UI. | Not fulfilled |
-| FR-TL-04 | No timeline location/GPS UI. | Not fulfilled |
-
-### 9.4 Alert and Notification Requirements
-
-| ID | Frontend state | Coverage |
-|---|---|---|
-| FR-ALT-01 | No alert center or alert trigger UI. | Not fulfilled |
-| FR-ALT-02 | Bell icon exists only as static UI. | Not fulfilled |
-| FR-ALT-03 | No role-filtered alert UI. | Not fulfilled |
-| FR-ALT-04 | No unread badge/read state UI. | Not fulfilled |
-| FR-ALT-05 | No email stub UI expected; backend planning item. | Not applicable to frontend now |
-| FR-ALT-06 | No acknowledge/dismiss controls. | Not fulfilled |
-
-### 9.5 Package Management Requirements
-
-| ID | Frontend state | Coverage |
-|---|---|---|
-| FR-PKG-01 | No package creation form. | Not fulfilled |
-| FR-PKG-02 | No route assignment UI. | Not fulfilled |
-| FR-PKG-03 | No status override UI. | Not fulfilled |
-| FR-PKG-04 | No package search/filter UI. Top search is not wired. | Not fulfilled |
-| FR-PKG-05 | No public tracking page. | Not fulfilled |
-
-### 9.6 RBAC Requirements
-
-| ID | Frontend state | Coverage |
-|---|---|---|
-| FR-RBAC-01 | No role-specific routes/layouts. | Not fulfilled |
-| FR-RBAC-02 | Current dashboard resembles operator/device console, but lacks package/map/alert management. | Partially fulfilled as UI direction only |
-| FR-RBAC-03 | No warehouse-scoped UI. | Not fulfilled |
-| FR-RBAC-04 | No customer tracking UI. | Not fulfilled |
-| FR-RBAC-05 | No login UI or session handling. | Not fulfilled |
+- Live package map, marker clustering, geofence drawing, and breach visuals.
+- Route assignment beyond device/facility assignment.
+- Login, RBAC-aware routes, warehouse view, customer/public tracking page.
+- Alert center, unread badge, acknowledgement, dismissal, and notification workflow.
+- ETA, route optimization, and large-fleet simulation controls.
 
 ---
 
@@ -340,133 +298,109 @@ Defined in `lib/backend/realtime/contracts.ts`:
 
 | ID | Requirement | Frontend state | Coverage |
 |---|---|---|---|
-| NFR-01 | Map/timeline load within 3 seconds | Map/timeline not implemented. Current dashboard server snapshot may depend on DB latency. | Not measurable for PRD screens |
-| NFR-02 | Scale toward 200+ packages | Current UI renders device rows and recent logs. No virtualized package fleet/map. | Not fulfilled |
-| NFR-03 | Reconnecting state | SSE logs errors to console only. No visible reconnecting UI. | Not fulfilled |
-| NFR-04 | Security | No authenticated frontend session or protected navigation. | Not fulfilled |
-| NFR-05 | Responsive for >=1024px | Current dashboard is responsive and includes mobile drawer. | Partially fulfilled |
-| NFR-06 | Maintainability | Component split is modular; command schemas are shared with backend. | Partially fulfilled |
-| NFR-07 | Browser support | Not explicitly verified. | Needs verification |
+| NFR-01 | Prioritize clear data flow over feature breadth | UI focuses on device state, raw event feed, command controls, and research observation. | Implemented direction |
+| NFR-02 | Raw events/logs inspectable | Terminal feed displays recent MQTT/raw events from backend. | Implemented |
+| NFR-03 | Modular UI | SimCon shell, device table, command panel, terminal feed, and primitives are split into components. | Implemented |
+| NFR-04 | Reliability during local tests | SSE consumption exists, but visible reconnecting state is limited. | Partial |
+| NFR-05 | Dashboard refresh around 5 seconds | SSE snapshot path exists; final run evidence needed. | Partial |
+| NFR-06 | Security limitations documented | No auth/session by design for research; production security is out of scope. | Implemented docs |
+| NFR-07 | Scalability beyond prototype out of scope | No large package/map UI planned for PRD v2.0. | Deferred |
 
 ---
 
-## 11. Planning Gaps
+## 11. Research UI Completion Gaps
 
-Frontend areas that need product/technical planning before implementation:
+Frontend areas needed before final report evidence:
 
-1. **Primary product route structure**
-   - Decide whether `/simcon` remains an internal IoT control console and new PRD routes are added separately, or whether the main dashboard evolves into the operator dashboard.
+1. **Dashboard screenshot**
+   - Capture `/simcon` after database seed and backend event ingestion.
+   - Include device table and terminal feed in screenshot.
 
-2. **Map implementation**
-   - Choose Leaflet, Mapbox GL JS, or another map provider.
-   - Define package marker schema, clustering threshold, marker states, and geofence rendering.
+2. **SSE update proof**
+   - Show before/after evidence that event feed or device state changes without manual reload.
+   - If not captured, keep SSE as partial and document limitation.
 
-3. **Realtime transport**
-   - Current UI uses SSE snapshots every 2 seconds. PRD references REST/WebSocket. Decide whether SSE is acceptable for MVP or whether WebSocket is required for package updates and alerts.
+3. **Command panel proof**
+   - Optional. Capture API/UI success for force-scan or configuration command only if used in the report.
 
-4. **Role-aware navigation**
-   - Define separate navigation trees for operator, warehouse staff, and public customer flow.
-   - Determine how warehouse facility scope is displayed and enforced.
+4. **Package timeline presentation**
+   - No UI required if API evidence is used.
+   - Add UI later only if report needs a visual timeline instead of API response.
 
-5. **Package management UX**
-   - Define package create/edit forms, status override workflow, search/filter behavior, and shipment detail modal/page.
-
-6. **Alert center UX**
-   - Define bell badge behavior, unread/read state, acknowledgement/dismissal, role filtering, severity styles, and alert history retention.
-
-7. **Public tracking page**
-   - Decide whether tracking by ID alone is sufficient or whether extra verification is needed.
-   - Define customer-safe payload that excludes internal device/facility data and PII.
-
-8. **IoT console boundaries**
-   - Current command console is useful for operations and demos but is not listed as the main PRD dashboard. Decide whether it is admin-only, operator-only, or hidden behind a feature flag.
+5. **Visible limitations**
+   - Document mock `/` route, limited reconnect feedback, static top bar actions, and no production auth.
 
 ---
 
-## 12. Recommended Frontend Roadmap
+## 12. Recommended Frontend Research Roadmap
 
-### Phase F1 - Product Navigation and Auth Shell
+### Phase F1 - Evidence Baseline
 
-- Add login page.
-- Add authenticated app shell.
-- Add route groups for operator and warehouse sections.
-- Add public tracking route outside authenticated shell.
-- Wire current user/role into navigation.
+- Run `/simcon` with seeded database snapshot.
+- Capture screenshot showing device rows and terminal panel.
+- Verify `/` remains mock/demo and does not get used as live evidence.
 
-### Phase F2 - Package Tracking UI
+### Phase F2 - Event Observation Proof
 
-- Add package list and package detail view.
-- Render package timeline using `/api/packages/[trackingId]/timeline`.
-- Add package filters: tracking ID, status, origin/facility, destination, date.
+- Run backend/device scenario and confirm terminal feed changes.
+- Capture SSE refresh evidence or mark UI realtime as partial.
 
-### Phase F3 - Realtime Map
+### Phase F3 - Optional Command Proof
 
-- Add map library.
-- Render package positions from backend snapshot/API.
-- Add selected package detail panel.
-- Add marker status colors and clustering.
+- Submit mobile command from command panel.
+- Capture success/error state and matching backend raw command event.
 
-### Phase F4 - Alerts and Notifications
+### Phase F4 - Report Support
 
-- Add alert center route/panel.
-- Add unread badge and severity grouping.
-- Add acknowledge/dismiss actions.
-- Add role-filtered alert display.
-
-### Phase F5 - Warehouse and Customer Views
-
-- Add warehouse-scoped package view.
-- Add checkpoint status update controls.
-- Add public tracking form/page with ETA and timeline.
-
-### Phase F6 - SimCon Hardening
-
-- Keep SimCon command console as an operator/admin tool.
-- Show SSE connection status visibly.
-- Respect terminal pause by buffering or suppressing incoming terminal updates while paused.
-- Replace static top bar/status labels with live backend values.
+- Use backend package timeline API evidence unless visible timeline UI becomes necessary.
+- Implement internal package CRUD UI when package management evidence is needed.
+- Keep package map, auth/RBAC, alert center, public tracking, geofence, ETA, and route optimization as future work.
 
 ---
 
 ## 13. Current Frontend Completion Snapshot
 
-| Product area | Status |
+| Research frontend area | Status |
 |---|---|
 | IoT device console | Implemented, DB-backed on `/simcon`, mock-backed on `/` |
 | Remote command forms | Implemented for mobile devices |
-| Live package map | Not started |
-| Package timeline UI | Not started |
-| Package CRUD UI | Not started |
-| Alert center | Not started |
-| RBAC/auth UI | Not started |
-| Warehouse UI | Not started |
-| Public tracking UI | Not started |
-| Geofence UI | Not started |
-| Simulation package control UI | Not started |
+| Device status table | Implemented |
+| Raw event terminal feed | Implemented |
+| SSE dashboard refresh | Partial, needs final evidence |
+| Package timeline API display | Optional, not required |
+| Dashboard screenshot evidence | Pending |
+| Command evidence | Optional/pending |
+| Live package map | Out of scope |
+| Package CRUD UI | In scope, pending implementation |
+| Alert center | Out of scope |
+| RBAC/auth UI | Out of scope |
+| Warehouse UI | Out of scope |
+| Public tracking UI | Out of scope |
+| Geofence UI | Out of scope |
+| Simulation package/route control UI | Out of scope |
 
 ---
 
 ## 14. Key Risks
 
-- The current UI can look like an operational dashboard, but it does not yet prove PRD package tracking requirements.
+- The current UI can look like a production operations dashboard, but it is research SimCon evidence only.
 - `/` uses static mock data and can be mistaken for live system state.
 - `/simcon` depends on database and SSE, but lacks visible connection/reconnect feedback.
-- Command controls publish to real MQTT when configured; this should be protected by auth before shared/demo use.
+- Command controls publish to MQTT when configured; use only in controlled local tests.
 - The frontend imports backend schemas into client command forms. This is useful for consistency, but future schemas must avoid server-only dependencies if they remain client-imported.
+- Package timeline UI is absent; report should use backend API response unless UI evidence is later added.
 
 ---
 
-## 15. Definition of Done for Frontend MVP
+## 15. Definition of Done for Frontend Research Scope
 
-Frontend can be considered MVP-complete only when these are true:
+Frontend can be considered research-complete when these are true:
 
-- Operator can log in and see all active packages on a live map.
-- Package markers update at the target refresh rate.
-- Operator can open a package detail timeline from map/list.
-- Warehouse staff can log in and see only facility-scoped packages.
-- Warehouse staff can register/update packages at checkpoints.
-- Customer can track a package by tracking number without login.
-- Alert center shows role-filtered unread/read alerts and supports operator acknowledgement.
-- Geofences are visible on the map and breached packages are visually distinguished.
-- Responsive behavior is verified on supported desktop widths.
-- `/simcon` command console is intentionally positioned as admin/operator tooling, not confused with customer tracking product UI.
+- `/simcon` loads a DB-backed snapshot.
+- Device table shows current device state.
+- Terminal feed shows MQTT/raw event evidence after scenario run.
+- SSE refresh behavior is captured or documented as partial.
+- Optional command panel evidence is captured if commands are included in the report.
+- Package timeline evidence is supplied by backend API response, unless frontend timeline UI is later added.
+- Dashboard screenshot is collected for the report.
+- Limitations are recorded: mock `/`, no package map, no auth/RBAC, no alert center, no public tracking, package CRUD pending, no geofence/ETA, and no production security.

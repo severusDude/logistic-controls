@@ -20,9 +20,9 @@ Berdasarkan latar belakang tersebut, rumusan masalah dalam penelitian ini adalah
 
 1. Bagaimana merancang arsitektur prototipe sistem pelacakan paket logistik berbasis IoT menggunakan RFID, GPS, MQTT, backend, dan dashboard sederhana?
 2. Bagaimana mengimplementasikan simulasi perangkat ESP32 yang mampu mengirim telemetry GPS, heartbeat, dan event scan RFID ke broker MQTT?
-3. Bagaimana backend memvalidasi payload MQTT, menyimpan raw event, memperbarui data perangkat, dan mencatat event paket berdasarkan RFID EPC?
-4. Bagaimana dashboard/API dapat digunakan untuk mengamati status perangkat, riwayat event, dan timeline paket pada prototipe penelitian?
-5. Bagaimana hasil pengujian prototipe berdasarkan skenario telemetry, heartbeat, scan RFID terdaftar, scan RFID tidak dikenal, dan pembaruan status paket?
+3. Bagaimana backend memvalidasi payload MQTT, menyimpan raw event, memperbarui data perangkat, mencatat event paket berdasarkan RFID EPC, dan menyediakan pengelolaan data paket internal?
+4. Bagaimana dashboard/API dapat digunakan untuk mengamati status perangkat, riwayat event, timeline paket, dan data paket pada prototipe penelitian?
+5. Bagaimana hasil pengujian prototipe berdasarkan skenario telemetry, heartbeat, scan RFID terdaftar, scan RFID tidak dikenal, pengelolaan data paket, dan pembaruan status paket?
 
 ### 1.3 Tujuan Penelitian
 
@@ -32,8 +32,8 @@ Tujuan dari penelitian ini adalah sebagai berikut:
 2. Mengimplementasikan simulasi perangkat ESP32 berbasis Wokwi yang merepresentasikan perangkat mobile dengan kemampuan membaca tag RFID dan mengirim telemetry GPS.
 3. Mengimplementasikan komunikasi data menggunakan MQTT untuk pengiriman telemetry, heartbeat, dan event scan dari perangkat menuju backend.
 4. Mengimplementasikan backend yang memvalidasi payload, menyimpan raw MQTT event, memperbarui state perangkat, mencatat event paket, dan memisahkan scan RFID tidak dikenal.
-5. Menyediakan dashboard/API sederhana untuk mengamati device state, terminal event, dan package timeline sebagai bukti alur pelacakan.
-6. Menguji prototipe menggunakan skenario yang telah ditentukan untuk menilai keberhasilan pengiriman data, penyimpanan event, dan pembaruan status paket.
+5. Menyediakan dashboard/API sederhana untuk mengamati device state, terminal event, package timeline, dan pengelolaan data paket internal sebagai bukti alur pelacakan.
+6. Menguji prototipe menggunakan skenario yang telah ditentukan untuk menilai keberhasilan pengiriman data, penyimpanan event, pengelolaan data paket, dan pembaruan status paket.
 
 ### 1.4 Manfaat Penelitian
 
@@ -54,9 +54,9 @@ Agar penelitian lebih terarah dan sesuai dengan kapasitas prototipe, batasan mas
 3. Paket direpresentasikan sebagai tag RFID deterministik dalam skenario pengujian, dengan jumlah paket terbatas pada skala prototipe.
 4. Lokasi paket diperoleh melalui pendekatan device-centric, yaitu paket dikaitkan dengan lokasi GPS perangkat mobile setelah RFID tag terbaca.
 5. Komunikasi data menggunakan broker MQTT lokal untuk telemetry, heartbeat, scan event, dan command demonstrasi.
-6. Backend dibatasi pada validasi payload, penyimpanan raw event, pembaruan device state, pencatatan package event, penyimpanan telemetry, heartbeat, dan unknown scan.
+6. Backend dibatasi pada validasi payload, penyimpanan raw event, pembaruan device state, pencatatan package event, penyimpanan telemetry, heartbeat, unknown scan, dan package CRUD internal untuk kebutuhan operator/peneliti.
 7. Database menggunakan PostgreSQL dengan Prisma sebagai ORM sesuai kebutuhan penyimpanan data prototipe.
-8. Dashboard/API yang disediakan hanya digunakan untuk observasi penelitian, yaitu melihat status perangkat, event feed, command sederhana, dan package timeline.
+8. Dashboard/API yang disediakan hanya digunakan untuk observasi penelitian, yaitu melihat status perangkat, event feed, command sederhana, package timeline, dan pengelolaan data paket internal.
 9. Penelitian tidak membahas customer tracking portal, role-based access control, peta interaktif, geofence, notification center, email, route optimization, estimasi waktu kedatangan, multi-tenant deployment, atau pengujian skalabilitas besar.
 10. Aspek keamanan produksi seperti HTTPS, autentikasi penuh, otorisasi pengguna, broker ACL, dan hardening infrastruktur tidak diimplementasikan, tetapi dicatat sebagai keterbatasan dan arah pengembangan.
 

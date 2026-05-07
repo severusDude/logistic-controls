@@ -58,6 +58,7 @@ The DOCX draft contains these main report chapters. This markdown file tracks wh
 - PostgreSQL/Prisma persistence.
 - Device state, raw MQTT event, package event, heartbeat, telemetry, unknown scan records.
 - Package timeline API for verification.
+- Internal package CRUD for researcher/operator package list, create, detail, update, assignment/status override, and delete/archive on a small dataset.
 - Simple SimCon dashboard for device/event observation.
 - Scenario-based test evidence.
 
@@ -69,7 +70,6 @@ The DOCX draft contains these main report chapters. This markdown file tracks wh
 - Geofence detection.
 - Alert notification center.
 - Email notification.
-- Full package CRUD.
 - ETA and route optimization.
 - Large fleet simulation.
 - Multi-tenant deployment.
@@ -100,6 +100,7 @@ The DOCX draft contains these main report chapters. This markdown file tracks wh
 | Development seed | Yes | `prisma/seed.ts` | Creates facility, users, device, packages. |
 | Device API | Yes | `/api/devices`, `/api/devices/:deviceId` | No auth. |
 | Package timeline API | Yes | `/api/packages/:trackingId/timeline` | Internal/research use. |
+| Package CRUD API/UI | Not started | Planned App Router APIs and internal dashboard screens | In scope for operator/research use; not customer-facing. |
 | Raw event API | Yes | `/api/internal/raw-events` | No auth; research only. |
 | Realtime dashboard stream | Partial | `/api/realtime/stream` | SSE polling snapshots, not WebSocket. |
 | SimCon dashboard | Yes | `app/simcon/page.tsx`, `components/simcon/` | Device/event/command oriented. |
@@ -134,6 +135,7 @@ The DOCX draft contains these main report chapters. This markdown file tracks wh
 | BE-07 | Device offline timeout works. | Partial | Need test evidence after heartbeat stop. |
 | BE-08 | Backend duplicate scan dedup beyond event ID. | Not started | Future work; firmware cooldown currently primary. |
 | BE-09 | Full scan contexts (`delivered`, `exception`, etc.) handled. | Not started | Simplify or implement only if needed for report. |
+| BE-10 | Package CRUD/search/status override API. | Not started | Planned internal routes: `GET/POST /api/packages`, `GET/PATCH/DELETE /api/packages/{trackingId}`. |
 
 ### 5.3 Frontend / Dashboard
 
@@ -145,7 +147,8 @@ The DOCX draft contains these main report chapters. This markdown file tracks wh
 | UI-04 | SSE updates dashboard without full reload. | Partial | Screen recording or before/after evidence. |
 | UI-05 | Command panel posts mobile commands. | Partial | API success + command raw event. |
 | UI-06 | Package timeline visible in UI. | Not started | API exists; UI not needed if report uses API evidence. |
-| UI-07 | Live map. | Out of scope | N/A. |
+| UI-07 | Internal package management UI. | Not started | Planned table/search, create/edit form, detail, assignment/status controls. |
+| UI-08 | Live map. | Out of scope | N/A. |
 
 ### 5.4 Research Report
 
@@ -170,16 +173,16 @@ The DOCX draft contains these main report chapters. This markdown file tracks wh
 
 1. Bagaimana merancang prototipe sistem pelacakan paket logistik berbasis IoT menggunakan RFID, GPS, dan MQTT?
 2. Bagaimana mengimplementasikan pengiriman data telemetry, heartbeat, dan scan RFID dari perangkat IoT ke backend?
-3. Bagaimana backend memvalidasi, menyimpan, dan menampilkan data pelacakan paket secara sederhana?
-4. Bagaimana hasil pengujian prototipe berdasarkan keberhasilan pengiriman data, penyimpanan event, dan pembaruan status paket?
+3. Bagaimana backend memvalidasi, menyimpan, mengelola data paket, dan menampilkan data pelacakan paket secara sederhana?
+4. Bagaimana hasil pengujian prototipe berdasarkan keberhasilan pengiriman data, penyimpanan event, pengelolaan data paket, dan pembaruan status paket?
 
 ### 6.2 Tujuan Penelitian Draft
 
 1. Merancang arsitektur prototipe pelacakan paket logistik berbasis IoT.
 2. Mengimplementasikan simulasi perangkat ESP32 dengan GPS dan RFID.
 3. Mengimplementasikan backend MQTT ingestion dan penyimpanan data pelacakan.
-4. Menyediakan dashboard/API sederhana untuk observasi device, raw event, dan package timeline.
-5. Menguji prototipe menggunakan skenario telemetry, scan RFID, unknown scan, dan heartbeat.
+4. Menyediakan dashboard/API sederhana untuk observasi device, raw event, package timeline, dan pengelolaan data paket internal.
+5. Menguji prototipe menggunakan skenario telemetry, scan RFID, unknown scan, heartbeat, dan package CRUD internal jika telah diimplementasikan.
 
 ---
 
@@ -195,6 +198,7 @@ The DOCX draft contains these main report chapters. This markdown file tracks wh
 | 6 | Package timeline API | Call `/api/packages/{trackingId}/timeline`. | Timeline returns event list with status/location. | Needs final evidence |
 | 7 | Dashboard realtime feed | Open `/simcon`, run scenario. | Device/event feed changes within local refresh interval. | Needs final evidence |
 | 8 | Remote force scan command | POST force scan command from UI/API. | Command record and MQTT cmd raw event created. | Optional evidence |
+| 9 | Internal package CRUD | Use planned package API/UI to list, create, update, and delete/archive a test package. | Package record changes are persisted and remain separate from customer/public tracking scope. | Pending implementation |
 
 ---
 
@@ -292,6 +296,7 @@ Open /simcon
 - Backend API has no authentication because RBAC is out of research scope.
 - Scan processing currently supports limited contexts.
 - Dashboard is device/event oriented, not full customer package tracking UI.
+- Package CRUD/search/status override is in scope for internal operator/research use, but API/UI implementation is still pending.
 - Interactive map, geofence, alerts, and ETA are intentionally removed from scope.
 - Performance and scalability are not tested beyond local prototype scale.
 - Database service is not fully represented in current Docker Compose.
@@ -308,6 +313,7 @@ Open /simcon
 | High | Add architecture and flowchart visuals. | Diagram images or rendered tables. |
 | Medium | Verify package timeline API with known EPC. | Evidence snippet. |
 | Medium | Verify dashboard SSE update behavior. | Screenshot/short description. |
+| Medium | Implement internal package CRUD API/UI. | Package list/create/detail/update/delete-or-archive evidence. |
 | Medium | Decide whether delivery context must be implemented or documented as limitation. | Clear report statement. |
 | Low | Add optional command round-trip evidence. | Optional demo evidence. |
 
@@ -320,6 +326,7 @@ Recommended wording direction:
 - Use term **prototipe penelitian** instead of MVP product.
 - Use **simulasi perangkat IoT** instead of production deployment.
 - Use **observasi dashboard/API** instead of customer-facing tracking platform.
+- Treat **package CRUD** as internal operator/research tooling, not a public shipment product workflow.
 - Treat security, RBAC, geofence, alerts, ETA, and live map as **saran pengembangan**, not failed requirements.
 - Emphasize core contribution: integration of RFID identification, GPS telemetry, MQTT transport, backend persistence, and dashboard monitoring.
 
@@ -335,6 +342,7 @@ Recommended wording direction:
 | Firmware implementation | Mostly done, based on existing tech doc |
 | Backend ingestion | Partial but research-usable |
 | Frontend dashboard | Partial but research-usable |
+| Package CRUD scope | Re-added to scope; implementation pending |
 | Final integrated test evidence | Pending |
 | Final report content | Pending |
 
@@ -349,4 +357,5 @@ Research project is ready for final report when:
 3. At least one telemetry and heartbeat event is stored and visible through API/dashboard.
 4. Package timeline shows scan-derived status evidence.
 5. Test evidence is collected and inserted into report.
-6. Limitations and future work clearly state what was intentionally not implemented.
+6. Internal package CRUD scope is implemented with evidence or clearly marked as in-scope pending work.
+7. Limitations and future work clearly state what was intentionally not implemented.

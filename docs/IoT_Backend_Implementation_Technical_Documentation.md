@@ -4,14 +4,19 @@
 **Document date:** May 7, 2026
 **Source basis:** Current repository scan, `PRD_GPS_Logistic_Package_Tracking_MVP.md`, `IoT_Device_Implementation_Technical_Documentation.md`, and Next.js 16 local docs under `node_modules/next/dist/docs/`.
 **Backend scope in this document:** Next.js route handlers, Prisma/PostgreSQL model, MQTT worker, ingestion processors, realtime SSE snapshot service, and backend requirement coverage.
+**Research scope note:** This document follows `PRD_GPS_Logistic_Package_Tracking_MVP.md` v2.0 research scope.
 
 ---
 
 ## 1. Executive Summary
 
-The backend has moved beyond a frontend-only mock. It now contains a partial IoT ingestion backend for mobile device telemetry, RFID scan events, heartbeats, raw MQTT event persistence, device offline detection, package timeline lookup, and mobile device command publishing.
+The backend implements the research prototype control plane for mobile device telemetry, RFID scan events, heartbeats, raw MQTT event persistence, device offline detection, package timeline lookup, and mobile device command publishing.
 
-The current backend is best described as **Phase 1 IoT control-plane backend** rather than the full PRD logistics tracking backend.
+The current backend is best described as a **research-usable IoT ingestion backend** for proving the core data path:
+
+```text
+RFID/GPS device event -> MQTT -> backend worker -> PostgreSQL/Prisma -> API/dashboard
+```
 
 Implemented backend capabilities:
 
@@ -29,19 +34,15 @@ Implemented backend capabilities:
 - API route handlers expose health, device list/detail, package timeline, raw events, realtime SSE snapshots, and device commands.
 - Command publisher sends `update_role`, `force_scan`, `set_cooldown`, and `reboot` commands to mobile device MQTT cmd topics.
 
-Major backend gaps against PRD and device architecture:
+Current backend gaps for research completion:
 
-- No authentication/session/JWT middleware is implemented despite user and role models existing.
-- No RBAC enforcement on API routes or realtime stream.
-- No package CRUD API is implemented.
-- No alert engine behavior is implemented, though the `Alert` table exists.
-- No geofence model/evaluator/PostGIS spatial behavior is implemented.
-- No fixed-device MQTT subscription or fixed-device processor is implemented.
-- No full scan context coverage; scan schema currently accepts only `pickup` and `in_transit`.
-- No route/waypoint/speed-profile simulation engine is implemented.
-- No WebSocket server exists; realtime UI uses SSE snapshot polling.
-- No database container is present in `docker-compose.yml`; only Mosquitto is configured.
-- MQTT broker is configured with anonymous access and no ACL, suitable only for local MVP testing.
+- Final integrated test evidence still needs to be collected from worker logs, APIs, and dashboard observation.
+- Scan processing currently supports only `pickup` and `in_transit`.
+- Backend time-window duplicate suppression is not implemented; firmware cooldown is the primary duplicate guard.
+- Command publish exists, but command round-trip and acknowledgement are not verified.
+- Docker Compose includes Mosquitto only; PostgreSQL is an external/local prerequisite.
+- MQTT broker is configured with anonymous access and no ACL, suitable only for local research testing.
+- Authentication, RBAC, geofence, alert center, ETA, route optimization, public tracking, and production hardening are out of scope for PRD v2.0 and are not backend MVP blockers.
 
 ---
 
@@ -113,7 +114,7 @@ Defined in `prisma/schema.prisma`.
 | `User` | Operator/warehouse staff account record. | Seeded only; no auth route/session/middleware yet. |
 | `UserFacilityScope` | Warehouse user to facility relation. | Seeded only; not enforced yet. |
 | `Device` | Canonical device registry state. | Upserted by telemetry/scan/heartbeat processors. Queried by API and dashboard snapshot. |
-| `Package` | Package identity, RFID EPC, status, current location/device/facility. | Seeded; updated by scan/telemetry processors. No CRUD API yet. |
+| `Package` | Package identity, RFID EPC, status, current location/device/facility. | Seeded; updated by scan/telemetry processors. Internal CRUD/search/status override is in scope but not implemented yet. |
 | `PackageEvent` | Timeline/status event history. | Created by scan processor. Queried by timeline API and realtime snapshot. |
 | `DeviceTelemetry` | GPS telemetry history. | Created by telemetry processor with duplicate guard by device and sequence number. |
 | `DeviceHeartbeat` | Device heartbeat history. | Created by heartbeat processor. |
@@ -122,17 +123,19 @@ Defined in `prisma/schema.prisma`.
 | `RawMqttEvent` | Raw event audit log. | Created for inbound MQTT messages and published commands. |
 | `UnknownScan` | Quarantine for scan events whose EPC does not match a package. | Created/upserted by scan processor. |
 
-### 4.3 Missing Data Models for Full PRD
+### 4.3 Deferred Product Models
 
-| Missing model/field area | Why needed |
+The current schema is broader than the active research scope. These areas are not required for PRD v2.0 completion, but remain useful future-work references.
+
+| Deferred model/field area | Future use |
 |---|---|
-| Geofence polygon model | PRD requires delivery zones and geofence breach detection. |
-| Route and waypoint models | PRD requires predefined waypoints and route assignment. |
-| Driver/carrier assignment model | Needed if mobile devices represent trucks/drivers beyond current device state. |
-| Package dimensions fields | PRD requires package weight/dimensions; current model lacks dimensions and weight. |
-| Origin/destination structured models | Current package stores sender/recipient addresses and current facility, but not origin/destination entities. |
-| Alert recipient/read records | Current `Alert` has one `isRead` and one `acknowledgedByUserId`; role/user-specific read state is not modeled. |
-| Command acknowledgement event model | `CommandStatus.acked` exists, but no ack topic/schema/processor exists. |
+| Geofence polygon model | Future geofence detection. |
+| Route and waypoint models | Future route assignment and ETA work. |
+| Driver/carrier assignment model | Future operational user/device assignment. |
+| Package dimensions fields | Optional future metadata expansion for package CRUD beyond current sender/recipient/address fields. |
+| Origin/destination structured models | Future shipment management. |
+| Alert recipient/read records | Future alert center. |
+| Command acknowledgement event model | Future device command ack workflow. |
 
 ---
 
@@ -150,17 +153,21 @@ All API routes are implemented as Next.js App Router `route.ts` handlers under `
 | GET | `/api/packages/:trackingId/timeline` | `app/api/packages/[trackingId]/timeline/route.ts` | Returns package state and package event timeline. | No auth; not public-safe reviewed |
 | GET | `/api/realtime/stream` | `app/api/realtime/stream/route.ts` | Emits SSE `snapshot` events when DB watermarks change; keepalive every 15 seconds. | No auth |
 
-API gaps:
+Planned or out-of-scope API gaps:
 
-- No `/api/auth/login` or logout/session route.
-- No package list route.
-- No package create/update/status override routes.
-- No alert list/ack/dismiss routes.
-- No geofence CRUD/evaluation route.
-- No facility CRUD route.
-- No route/waypoint route.
-- No public tracking route with restricted response contract.
-- No RBAC middleware or request user resolution.
+- No `/api/auth/login` or logout/session route; auth/RBAC is out of PRD v2.0 research scope.
+- Planned package CRUD/search/status override routes are in scope but not implemented yet:
+  - `GET /api/packages`
+  - `POST /api/packages`
+  - `GET /api/packages/{trackingId}`
+  - `PATCH /api/packages/{trackingId}`
+  - `DELETE /api/packages/{trackingId}` or a soft-delete/archive equivalent if safer for research evidence.
+- No alert list/ack/dismiss routes; alerts are future work.
+- No geofence CRUD/evaluation route; geofence is future work.
+- No facility CRUD route; one seeded facility is enough for current research.
+- No route/waypoint route; route optimization and ETA are out of scope.
+- No public tracking route; package timeline API is internal/research evidence only.
+- No RBAC middleware or request user resolution; APIs are local research endpoints.
 
 ---
 
@@ -406,9 +413,9 @@ Implemented requirement value:
 Current limits:
 
 - Does not create package timeline events for telemetry movement.
-- Does not calculate ETA.
-- Does not evaluate geofences.
-- Does not update alerts.
+- ETA calculation is out of PRD v2.0 scope.
+- Geofence evaluation is out of PRD v2.0 scope.
+- Alert creation is out of PRD v2.0 scope.
 - Does not compare firmware `active_package_count` against backend manifest.
 
 ### 8.3 Scan Processor
@@ -588,7 +595,7 @@ Current Docker Compose includes only:
 
 - `mosquitto`
 
-Missing from device tech doc target:
+Not included in the active PRD v2.0 research Compose setup:
 
 - backend API service
 - frontend service
@@ -596,70 +603,66 @@ Missing from device tech doc target:
 - fixed-device simulator
 - mobile-device simulator
 
+PostgreSQL remains an external/local prerequisite through `DATABASE_URL`. The backend API and worker run through local `pnpm` scripts during research verification.
+
 ---
 
-## 11. PRD Functional Requirement Coverage - Backend
+## 11. PRD v2 Functional Requirement Coverage - Backend
 
-### 11.1 GPS Simulation Engine Requirements
-
-| ID | Backend state | Coverage |
-|---|---|---|
-| FR-SIM-01 | Backend ingests mobile telemetry every firmware interval if worker is running, but does not generate simulated GPS coordinates. | Not fulfilled as simulation engine |
-| FR-SIM-02 | No waypoint model or route-following generator. | Not fulfilled |
-| FR-SIM-03 | No load test for 10-50 concurrent packages/devices. | Not verified |
-| FR-SIM-04 | No speed profile model/control. | Not fulfilled |
-| FR-SIM-05 | REST APIs and SSE exist; no WebSocket API; no simulation API. | Partially fulfilled |
-
-### 11.2 Real-Time Map Requirements
+### 11.1 IoT Device and MQTT Ingestion
 
 | ID | Backend state | Coverage |
 |---|---|---|
-| FR-MAP-01 | Package last-known positions can be stored and exposed through package timeline; no package map API exists. | Partially fulfilled data foundation |
-| FR-MAP-02 | SSE emits snapshots at 2-second polling interval when watermarks change. | Partially fulfilled transport target |
-| FR-MAP-03 | Package timeline API exists for a known tracking ID. | Partially fulfilled |
-| FR-MAP-04 | Marker clustering is frontend concern; no backend clustering needed for MVP. | Not applicable/backend not needed now |
-| FR-MAP-05 | No geofence model/API. | Not fulfilled |
-| FR-MAP-06 | No geofence breach evaluation or breach state. | Not fulfilled |
+| FR-IOT-01 | Backend expects device-side ESP32/Wokwi simulation; simulation execution is firmware/tooling concern. | Not backend-owned |
+| FR-IOT-02 | Mobile telemetry payload accepts GPS fix state, coordinates, and timestamp fields. | Implemented backend ingestion |
+| FR-IOT-03 | Scan payload accepts deterministic RFID EPC values from the simulated device. | Implemented backend ingestion |
+| FR-IOT-04 | Worker subscribes to mobile telemetry, scan, and heartbeat MQTT topics. | Implemented |
+| FR-IOT-05 | Command publisher supports optional mobile commands for demonstration. | Partial; round-trip not verified |
+| FR-MQTT-01 | Mosquitto service is configured for local research communication. | Implemented local broker |
+| FR-MQTT-02 | Worker subscribes to `logistics/mobile/+/telemetry`, `scan`, and `heartbeat`. | Implemented |
+| FR-MQTT-03 | Supported inbound MQTT payloads are persisted as `RawMqttEvent`. | Implemented |
+| FR-MQTT-04 | Payload parsing and schema validation reject invalid messages without normal worker shutdown. | Implemented design; final evidence needed |
+| FR-MQTT-05 | Backend can publish mobile command messages to device command topics. | Optional/partial |
 
-### 11.3 Status Timeline Requirements
-
-| ID | Backend state | Coverage |
-|---|---|---|
-| FR-TL-01 | `PackageEvent` model and `/api/packages/:trackingId/timeline` exist. | Partially fulfilled |
-| FR-TL-02 | Prisma enum includes all standard PRD statuses. Processor currently maps only pickup/in_transit. | Partially fulfilled |
-| FR-TL-03 | Package current status is returned by timeline API. | Fulfilled backend side |
-| FR-TL-04 | Timeline entries include location and coordinates when scan payload includes GPS. | Partially fulfilled |
-
-### 11.4 Alert and Notification Requirements
+### 11.2 Backend Data Processing
 
 | ID | Backend state | Coverage |
 |---|---|---|
-| FR-ALT-01 | `Alert` model exists; no alert engine creates alerts. | Not fulfilled |
-| FR-ALT-02 | No alert stream/notification center API. | Not fulfilled |
-| FR-ALT-03 | `targetRoles` field exists but no role filtering is enforced. | Not fulfilled |
-| FR-ALT-04 | `isRead` field exists but no API/use. | Not fulfilled |
-| FR-ALT-05 | No email notification stub. | Not fulfilled |
-| FR-ALT-06 | `acknowledgedByUserId` exists but no acknowledge/dismiss API. | Not fulfilled |
+| FR-BE-01 | Zod schemas validate telemetry, scan, heartbeat, and command payloads. | Implemented |
+| FR-BE-02 | Telemetry and heartbeat processors update device state and store history rows. | Implemented |
+| FR-BE-03 | Scan processor resolves known RFID EPC to package records. | Implemented; needs final known-scan evidence |
+| FR-BE-04 | Valid scan events create `PackageEvent` rows. | Implemented for supported contexts |
+| FR-BE-05 | Package status/current location can update from scan and later mobile telemetry. | Partial; mobile inherited GPS path implemented |
+| FR-BE-06 | Unknown RFID EPC values are stored in `UnknownScan`. | Implemented |
+| FR-BE-07 | Offline detector marks stale devices offline after heartbeat timeout. | Implemented; needs final evidence |
 
-### 11.5 Package Management Requirements
-
-| ID | Backend state | Coverage |
-|---|---|---|
-| FR-PKG-01 | Package model and seed data exist; no create package API. Weight/dimensions missing. | Partially fulfilled data foundation |
-| FR-PKG-02 | No route assignment model/logic. | Not fulfilled |
-| FR-PKG-03 | No manual status override API. | Not fulfilled |
-| FR-PKG-04 | No package list/search/filter API. | Not fulfilled |
-| FR-PKG-05 | Timeline endpoint is unauthenticated, but no public-safe tracking API/page contract exists. | Partially fulfilled, needs redesign |
-
-### 11.6 RBAC Requirements
+### 11.3 Dashboard/API Support
 
 | ID | Backend state | Coverage |
 |---|---|---|
-| FR-RBAC-01 | User role enum supports operator and warehouse staff; no customer role because customer is public. | Partially fulfilled data foundation |
-| FR-RBAC-02 | No operator access enforcement. | Not fulfilled |
-| FR-RBAC-03 | User facility scope model exists; no API enforcement. | Partially fulfilled data foundation |
-| FR-RBAC-04 | No public tracking-specific API with scoped data. | Not fulfilled |
-| FR-RBAC-05 | User/passwordHash model and seed data exist; no login/JWT/session middleware. | Partially fulfilled data foundation |
+| FR-UI-01 | `/api/devices` and `/api/devices/:deviceId` expose device state. | Implemented |
+| FR-UI-02 | `/api/internal/raw-events` exposes recent raw MQTT event feed for research observation. | Implemented |
+| FR-UI-03 | `/api/realtime/stream` emits SSE snapshots for dashboard refresh without manual reload. | Partial; polling snapshot, not WebSocket |
+| FR-UI-04 | `/api/packages/:trackingId/timeline` exposes package timeline for verification. | Implemented API |
+| FR-UI-05 | Device command API exists for optional demonstration commands. | Optional/partial |
+
+### 11.4 Package Management
+
+| ID | Backend state | Coverage |
+|---|---|---|
+| FR-PKG-01 | `Package` model and seed data exist; no package list/detail CRUD route beyond timeline yet. | In scope, pending API |
+| FR-PKG-02 | No package creation API yet; planned route is `POST /api/packages`. | In scope, pending API |
+| FR-PKG-03 | No metadata/status/RFID/facility/device assignment update route yet; planned route is `PATCH /api/packages/{trackingId}`. | In scope, pending API |
+| FR-PKG-04 | No delete/archive route yet; planned route is `DELETE /api/packages/{trackingId}` or archive equivalent. | In scope, pending API |
+| FR-PKG-05 | Package CRUD remains internal/research-facing; customer portal, RBAC, route/ETA, and production shipment workflow are excluded from package CRUD scope. | Documented boundary |
+
+### 11.5 Testing and Evidence
+
+| ID | Backend state | Coverage |
+|---|---|---|
+| FR-TEST-01 | Firmware scenarios exist; backend needs final integrated run evidence. | Pending evidence |
+| FR-TEST-02 | Raw events, device APIs, package timeline API, and worker logs can provide evidence. | Evidence paths ready |
+| FR-TEST-03 | Research documentation tracks implemented, partial, and out-of-scope areas. | Implemented in docs |
 
 ---
 
@@ -667,13 +670,13 @@ Missing from device tech doc target:
 
 | ID | Requirement | Backend state | Coverage |
 |---|---|---|---|
-| NFR-01 | Map/timeline load within 3 seconds | Timeline endpoint exists but no benchmark. | Not verified |
-| NFR-02 | Scale to 200+ packages without core refactor | Schema can represent many records; no load testing, queueing, or indexing review beyond basic indexes. | Not verified |
-| NFR-03 | Simulation engine auto-restart and reconnecting state | Worker reconnects MQTT; Docker restart policy not configured; no frontend reconnect state. | Partially fulfilled for MQTT reconnect only |
-| NFR-04 | Auth required except public tracking, HTTPS enforced | No auth/RBAC/HTTPS enforcement. | Not fulfilled |
-| NFR-05 | Dashboard responsive | Frontend concern. | Not backend applicable |
-| NFR-06 | Modular architecture and swappable simulation/IoT source | Backend modules are separated into schemas, processors, queries, MQTT, commands, realtime. | Partially fulfilled |
-| NFR-07 | Browser support | Frontend verification needed. | Not backend applicable |
+| NFR-01 | Prioritize clear data flow over feature breadth | Backend focuses on MQTT ingestion, persistence, and verification APIs. | Implemented direction |
+| NFR-02 | Raw events and logs inspectable | `RawMqttEvent`, worker logs, and raw event API support audit evidence. | Implemented |
+| NFR-03 | Modular backend | Config, MQTT, schemas, processors, queries, commands, and realtime modules are separated. | Implemented |
+| NFR-04 | Worker handles invalid payloads/reconnect attempts | Validation and MQTT reconnect behavior exist; final fault evidence still needed. | Partial |
+| NFR-05 | Dashboard/realtime feed around 5 seconds during local tests | SSE polls watermarks every 2 seconds; final UI evidence needed. | Partial |
+| NFR-06 | Document security limitations | Anonymous broker and unauthenticated APIs are documented as research limitations. | Implemented |
+| NFR-07 | Scalability beyond prototype out of scope | No large-scale load testing planned for PRD v2.0. | Deferred |
 
 ---
 
@@ -691,120 +694,81 @@ Missing from device tech doc target:
 | Unknown EPC quarantine | Implemented. |
 | Backend duplicate suppression | Only event ID duplicate guard exists; time-window dedup not implemented. |
 | Package location resolver | Partially implemented for mobile inherited GPS; fixed-device stamping not implemented. |
-| Geofence evaluator | Not implemented. |
-| ETA recalculation | Not implemented. |
+| Geofence evaluator | Out of PRD v2.0 scope. |
+| ETA recalculation | Out of PRD v2.0 scope. |
 | Device offline lifecycle | Partially implemented for stale heartbeat >90s. |
-| Broker ACL | Not implemented; anonymous local broker config. |
-| Docker Compose target architecture | Not implemented; only broker service exists. |
+| Broker ACL | Out of implementation scope; anonymous local broker config is documented limitation. |
+| Docker Compose target architecture | Research setup uses local scripts plus Mosquitto service; DB is external/local. |
 
 ---
 
-## 14. Planning Gaps
+## 14. Research Completion Gaps
 
-Backend areas needing design before implementation:
+Backend areas needed before final research report evidence:
 
-1. **Authentication and authorization**
-   - Define JWT/session strategy for Next.js route handlers.
-   - Add login route and password verification.
-   - Add middleware/helper to enforce operator and warehouse scope.
-   - Decide public tracking endpoint contract and rate limits.
+1. **Final integrated run evidence**
+   - Capture worker startup log.
+   - Capture raw event API output after device scenario.
+   - Capture device detail API output after telemetry/heartbeat.
 
-2. **Package CRUD and search**
-   - Add package list API with filters.
-   - Add create package API with auto-generated tracking ID and RFID EPC assignment.
-   - Add update/status override API with audit event creation.
-   - Add sender/recipient/origin/destination validation.
+2. **Known package scan proof**
+   - Run or replay known EPC scan scenario.
+   - Verify package event creation.
+   - Verify `/api/packages/{trackingId}/timeline` response.
 
-3. **Route and geofence model**
-   - Add route and waypoint schema.
-   - Add geofence polygon schema.
-   - Decide whether to use PostGIS now or defer to app-level geometry for MVP.
-   - Implement geofence breach detection and alert creation.
+3. **Telemetry and heartbeat proof**
+   - Verify telemetry history and latest device GPS fields.
+   - Verify heartbeat history and online state.
+   - Optionally stop heartbeat long enough to prove offline detector.
 
-4. **Alert engine**
-   - Implement alert triggers for geofence breach, delay, delivered, exception, unknown EPC, device offline, and wrong facility.
-   - Define target role/user/facility scoping.
-   - Add alert list/read/ack/dismiss APIs.
-   - Add email stub logging behavior.
+4. **Unknown scan proof**
+   - Send or simulate unregistered EPC.
+   - Verify `UnknownScan` record and no package status update.
 
-5. **Fixed device support**
-   - Add fixed topic parser and schemas.
-   - Add fixed scan/heartbeat processors.
-   - Implement fixed-device package location stamping.
+5. **Optional command proof**
+   - POST force-scan or configuration command.
+   - Verify `DeviceCommand`, outbound raw cmd event, and MQTT publish result.
 
-6. **Full scan context support**
-   - Expand scan schema to all contexts from device doc.
-   - Implement status mapping for arrival, hub transfer, out for delivery, delivered, exception.
-   - Add transition rules and invalid transition handling.
-
-7. **Realtime architecture**
-   - Decide whether to keep SSE snapshots for MVP or implement WebSocket events.
-   - Add role-scoped realtime subscriptions.
-   - Avoid full-snapshot fanout if package volume grows.
-
-8. **Deployment**
-   - Add PostgreSQL service to Docker Compose or document external DB dependency.
-   - Add backend worker service and restart policy.
-   - Add broker persistence and ACL/password config for non-local use.
-   - Add health checks.
-
-9. **Verification and load testing**
-   - Add unit tests for schemas/processors.
-   - Add integration test with MQTT broker and test database.
-   - Add load test for 10-50 packages/devices and 2-second dashboard refresh.
+6. **Documented limitations**
+   - Record limited scan contexts, no backend time-window duplicate guard, local anonymous MQTT, external DB, and no production auth/hardening.
 
 ---
 
-## 15. Recommended Backend Roadmap
+## 15. Recommended Backend Research Roadmap
 
-### Phase B1 - Secure API Foundation
+### Phase B1 - Evidence Baseline
 
-- Implement login route and JWT session issuing.
-- Add auth helper for route handlers.
-- Enforce operator/warehouse access on device, raw event, command, and package APIs.
-- Split public tracking response from internal package timeline response.
+- Run database migration/seed, broker, worker, and Next.js app.
+- Record worker startup and health check outputs.
+- Collect raw event API and device API snapshots.
 
-### Phase B2 - Package API Completion
+### Phase B2 - Package Tracking Proof
 
-- Add package list/search/filter API.
-- Add package create API with tracking ID/RFID EPC generation.
-- Add status override API that creates `PackageEvent` audit rows.
-- Add package weight/dimensions and origin/destination fields or related models.
+- Verify known RFID scan creates package event.
+- Verify package status/location through timeline API.
+- Capture unknown RFID quarantine evidence.
 
-### Phase B3 - Scan Context and Fixed Device Support
+### Phase B3 - Liveness and Realtime Proof
 
-- Expand scan schema to all device-doc contexts.
-- Add fixed topic support.
-- Implement fixed-device scan processor.
-- Implement backend time-window duplicate suppression.
+- Verify heartbeat and telemetry persistence.
+- Verify stale heartbeat offline behavior if time allows.
+- Verify SSE snapshot changes are visible to `/simcon`.
 
-### Phase B4 - Geofence, Route, ETA
+### Phase B4 - Optional Command Proof
 
-- Add route/waypoint/geofence models.
-- Add route assignment on package creation.
-- Implement mobile telemetry ETA recalculation.
-- Implement geofence evaluator and breach state.
+- Verify command API publish path.
+- Document command ack/round-trip as unverified unless device receipt evidence is collected.
 
-### Phase B5 - Alert Engine
+### Phase B5 - Final Documentation
 
-- Create alerts from processors and scheduled detectors.
-- Add alert APIs for list/read/ack/dismiss.
-- Add role/facility/customer filtering.
-- Add email stub logging.
-
-### Phase B6 - Realtime and Deployment Hardening
-
-- Decide SSE vs WebSocket and document final transport.
-- Add role-scoped event streams.
-- Add PostgreSQL, worker, and broker services to Compose.
-- Add broker auth/ACL for device topics.
-- Add integration tests and operational runbook.
+- Insert evidence into research report materials.
+- Keep auth, RBAC, geofence, alerts, ETA, route optimization, public tracking, and production security as future work.
 
 ---
 
 ## 16. Current Backend Completion Snapshot
 
-| Product/backend area | Status |
+| Research backend area | Status |
 |---|---|
 | Database schema | Implemented partial foundation |
 | Prisma migrations | Implemented for current schema |
@@ -820,16 +784,21 @@ Backend areas needing design before implementation:
 | Unknown scan quarantine | Implemented |
 | Offline detector | Implemented partial |
 | Mobile command publish | Implemented partial |
-| Auth/JWT/session | Not started |
-| RBAC enforcement | Not started |
-| Package CRUD/search | Not started |
-| Alert engine/API | Not started |
-| Geofence evaluator/API | Not started |
-| Route/waypoint simulation | Not started |
+| Final integrated evidence | Pending |
+| Known package timeline evidence | Pending |
+| Telemetry/heartbeat API evidence | Pending |
+| Dashboard evidence | Pending |
+| Command round-trip evidence | Optional/pending |
+| Auth/JWT/session | Out of scope |
+| RBAC enforcement | Out of scope |
+| Package CRUD/search/status override | In scope, pending implementation |
+| Alert engine/API | Out of scope |
+| Geofence evaluator/API | Out of scope |
+| Route/waypoint simulation | Out of scope |
 | Fixed device ingestion | Not started |
 | Command acknowledgement | Not started |
-| Email stub | Not started |
-| Full Docker deployment | Not started |
+| Email stub | Out of scope |
+| Full Docker deployment | Out of scope |
 
 ---
 
@@ -873,31 +842,28 @@ Expected local prerequisites:
 
 ## 18. Key Risks
 
-- API routes are unauthenticated, including command publishing and internal raw event access.
-- MQTT broker allows anonymous clients and has no ACL.
-- Current command API can publish real device commands if MQTT env is configured.
-- Timeline endpoint may expose internal device/facility data and should not become the public tracking endpoint without review.
+- API routes are unauthenticated, including command publishing and internal raw event access; acceptable only for local research.
+- MQTT broker allows anonymous clients and has no ACL; production broker security is future work.
+- Current command API can publish device commands if MQTT env is configured; use only in controlled tests.
+- Timeline endpoint may expose internal device/facility data and should not be treated as public tracking.
 - Current mobile scan schema is narrower than firmware/device architecture documentation.
-- Missing fixed-device support means warehouse checkpoint architecture is incomplete.
-- Alert and geofence models/logic are not implemented, so exception handling is not yet product-functional.
-- Docker Compose does not represent the actual backend runtime topology.
+- Backend time-window duplicate suppression is missing; firmware cooldown remains primary duplicate guard.
+- Docker Compose includes only Mosquitto; database and app processes must be started separately.
+- Final integrated evidence is still pending, so report conclusions must not overclaim verified behavior.
 
 ---
 
-## 19. Definition of Done for Backend MVP
+## 19. Definition of Done for Backend Research Scope
 
-Backend can be considered MVP-complete only when these are true:
+Backend can be considered research-complete when these are true:
 
-- Auth login/JWT/session works for operator and warehouse users.
-- Route handlers enforce RBAC and warehouse facility scope.
-- Public tracking endpoint exposes only customer-safe package data.
-- Package CRUD/search/filter/status override APIs exist.
-- Package creation assigns route/RFID/tracking identity.
-- Mobile and fixed MQTT scan/heartbeat paths are implemented.
-- All scan contexts map to correct package status transitions.
-- Telemetry updates package location, ETA, geofence state, and realtime output.
-- Alert engine creates and stores alerts for PRD trigger types.
-- Alert APIs support unread/read/ack/dismiss and role filtering.
-- Realtime transport meets <=2 second refresh requirement for 10-50 active packages.
-- Docker/runtime deployment includes broker, worker, database, and frontend/backend server with health checks.
-- Tests cover schema validation, processors, route handlers, command publishing failure modes, and an MQTT ingestion integration path.
+- Worker connects to PostgreSQL and Mosquitto.
+- At least one heartbeat is stored and device state becomes online.
+- At least one GPS telemetry event is stored and latest device position updates.
+- At least one known RFID scan creates a package event and updates package timeline/status.
+- At least one unknown RFID scan is quarantined without package update.
+- Raw MQTT event API shows recent telemetry, scan, and heartbeat evidence.
+- Package timeline API returns scan-derived event data for a known tracking ID.
+- `/simcon` or SSE snapshot can observe device/event changes, or limitation is documented.
+- Optional command publish path is tested or documented as unverified.
+- Limitations clearly state simulation-only device, local anonymous MQTT, unauthenticated APIs, limited scan contexts, no production hardening, and no large-scale testing.
