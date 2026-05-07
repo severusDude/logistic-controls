@@ -2,9 +2,10 @@
 
 import { Boxes } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { Device, DeviceRole } from "@/lib/simcon/types";
 import { Button } from "@/components/ui/button";
+import { InlineNote } from "@/components/ui/inline-note";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,43 +17,57 @@ import {
 } from "@/components/ui/select";
 import { CommandCard } from "@/components/simcon/command-panel/command-card";
 import { MonoLabel } from "@/components/ui/mono-label";
-
-const updateConfigurationSchema = z.object({
-  role: z.enum(["truck", "scanner", "gateway"]),
-  facilityId: z.string().min(1, "Facility required"),
-  locationZone: z.string().min(1, "Zone required"),
-});
-
-type UpdateConfigurationValues = z.infer<typeof updateConfigurationSchema>;
+import {
+  CommandClientError,
+  submitDeviceCommand,
+} from "@/lib/backend/commands/command-client";
+import {
+  updateRoleCommandApiSchema,
+  type UpdateRoleCommandInput,
+} from "@/lib/backend/schemas/cmd";
 
 const roles: DeviceRole[] = ["truck", "scanner", "gateway"];
 
-export function UpdateConfigurationCard({ device }: { device: Device }) {
-  const form = useForm<UpdateConfigurationValues>({
+type UpdateConfigurationCardProps = {
+  device: Device;
+  canSendCommands: boolean;
+};
+
+export function UpdateConfigurationCard({
+  device,
+  canSendCommands,
+}: UpdateConfigurationCardProps) {
+  const form = useForm<UpdateRoleCommandInput>({
+    resolver: zodResolver(updateRoleCommandApiSchema),
     defaultValues: {
-      role: device.role,
-      facilityId: device.facility,
-      locationZone: device.zone,
+      newRole: device.role,
+      newFacilityId: device.facility,
+      newLocationName: device.zone,
     },
   });
+  const isBusy = form.formState.isSubmitting;
 
-  const handleSubmit = (values: UpdateConfigurationValues) => {
-    form.clearErrors();
-    const result = updateConfigurationSchema.safeParse(values);
-
-    if (!result.success) {
-      for (const issue of result.error.issues) {
-        const field = issue.path[0];
-        if (typeof field === "string") {
-          form.setError(field as keyof UpdateConfigurationValues, {
-            message: issue.message,
-          });
-        }
+  const handleSubmit = async (values: UpdateRoleCommandInput) => {
+    try {
+      await submitDeviceCommand(device.id, "update-role", values);
+      form.reset({
+        newRole: values.newRole ?? values.new_role ?? device.role,
+        newFacilityId: values.newFacilityId ?? values.new_facility_id ?? device.facility,
+        newLocationName:
+          values.newLocationName ?? values.new_location_name ?? device.zone,
+      });
+    } catch (error) {
+      if (error instanceof CommandClientError) {
+        form.setError("root", {
+          message: error.message,
+        });
+        return;
       }
-      return;
-    }
 
-    form.reset(result.data);
+      form.setError("root", {
+        message: "Unexpected command failure",
+      });
+    }
   };
 
   return (
@@ -65,6 +80,11 @@ export function UpdateConfigurationCard({ device }: { device: Device }) {
         className="grid gap-4"
         onSubmit={form.handleSubmit(handleSubmit)}
       >
+        <InlineNote tone={canSendCommands ? "info" : "warning"}>
+          {canSendCommands
+            ? "Backend publish active. Command posts go through `/api/devices/:deviceId/commands/:command`."
+            : "Fixed device. Backend command publish disabled until mobile device selected."}
+        </InlineNote>
         <div className="grid gap-3 md:grid-cols-3">
           <InfoBlock label="Role" value={device.role} />
           <InfoBlock label="Facility" value={device.facility} />
@@ -75,9 +95,13 @@ export function UpdateConfigurationCard({ device }: { device: Device }) {
             <Label className="text-[var(--ink-soft)]">Role profile</Label>
             <Controller
               control={form.control}
-              name="role"
+              name="newRole"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select
+                  disabled={isBusy || !canSendCommands}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
                   <SelectTrigger className="h-10 w-full rounded-lg border-[var(--line-subtle)] bg-black/10 text-white shadow-none">
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
@@ -91,30 +115,39 @@ export function UpdateConfigurationCard({ device }: { device: Device }) {
                 </Select>
               )}
             />
-            {form.formState.errors.role ? (
-              <p className="text-xs text-rose-200">{form.formState.errors.role.message}</p>
+            {form.formState.errors.newRole ? (
+              <p className="text-xs text-rose-200">{form.formState.errors.newRole.message}</p>
             ) : null}
           </div>
           <Field
-            error={form.formState.errors.facilityId?.message}
+            error={form.formState.errors.newFacilityId?.message}
             label="Facility ID"
           >
             <Input
-              {...form.register("facilityId")}
+              {...form.register("newFacilityId")}
+              disabled={isBusy || !canSendCommands}
               className="h-10 rounded-lg border-[var(--line-subtle)] bg-black/10 text-white shadow-none"
             />
           </Field>
           <Field
-            error={form.formState.errors.locationZone?.message}
-            label="Location ring"
+            error={form.formState.errors.newLocationName?.message}
+            label="Location name"
           >
             <Input
-              {...form.register("locationZone")}
+              {...form.register("newLocationName")}
+              disabled={isBusy || !canSendCommands}
               className="h-10 rounded-lg border-[var(--line-subtle)] bg-black/10 text-white shadow-none"
             />
           </Field>
         </div>
-        <Button className="h-10 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-sky-400/90">
+        {form.formState.errors.root?.message ? (
+          <InlineNote tone="error">{form.formState.errors.root.message}</InlineNote>
+        ) : null}
+        <Button
+          type="submit"
+          disabled={isBusy || !canSendCommands}
+          className="h-10 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-sky-400/90"
+        >
           Push updated config
         </Button>
       </form>

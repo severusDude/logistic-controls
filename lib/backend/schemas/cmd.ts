@@ -128,3 +128,5 @@ export const commandRouteConfig = {
 export type DeviceCommand = z.infer<typeof deviceCommandSchema>;
 export type CommandRouteSegment = z.infer<typeof commandRouteSegmentSchema>;
 export type MqttCommandEnvelope = z.infer<typeof mqttCommandEnvelopeSchema>;
+export type UpdateRoleCommandInput = z.input<typeof updateRoleCommandApiSchema>;
+export type SetCooldownCommandInput = z.input<typeof setCooldownCommandApiSchema>;

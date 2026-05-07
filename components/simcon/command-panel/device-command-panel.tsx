@@ -9,6 +9,8 @@ import { TimingParamsCard } from "@/components/simcon/command-panel/timing-param
 import { UpdateConfigurationCard } from "@/components/simcon/command-panel/update-configuration-card";
 
 export function DeviceCommandPanel({ device }: { device: Device }) {
+  const canSendCommands = device.type === "mobile";
+
   return (
     <SectionCard
       className="min-h-0 bg-[var(--bg-panel-strong)]"
@@ -24,9 +26,9 @@ export function DeviceCommandPanel({ device }: { device: Device }) {
       </div>
       <ScrollArea className="mt-3 min-h-0 flex-1">
         <div className="grid gap-3 pr-1">
-          <UpdateConfigurationCard device={device} />
-          <TimingParamsCard device={device} />
-          <ImmediateExecutionCard />
+          <UpdateConfigurationCard device={device} canSendCommands={canSendCommands} />
+          <TimingParamsCard device={device} canSendCommands={canSendCommands} />
+          <ImmediateExecutionCard device={device} canSendCommands={canSendCommands} />
         </div>
       </ScrollArea>
     </SectionCard>

@@ -1,8 +1,8 @@
 "use client";
 
 import { Activity } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import type { Device } from "@/lib/simcon/types";
 import { CommandCard } from "@/components/simcon/command-panel/command-card";
 import { Button } from "@/components/ui/button";
@@ -10,35 +10,55 @@ import { InlineNote } from "@/components/ui/inline-note";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MonoLabel } from "@/components/ui/mono-label";
+import {
+  CommandClientError,
+  submitDeviceCommand,
+} from "@/lib/backend/commands/command-client";
+import {
+  setCooldownCommandApiSchema,
+  type SetCooldownCommandInput,
+} from "@/lib/backend/schemas/cmd";
 
-const timingParamsSchema = z.object({
-  scanCooldown: z.number().min(1).max(999),
-});
+type TimingParamsCardProps = {
+  device: Device;
+  canSendCommands: boolean;
+};
 
-type TimingParamsValues = z.infer<typeof timingParamsSchema>;
-
-export function TimingParamsCard({ device }: { device: Device }) {
-  const form = useForm<TimingParamsValues>({
+export function TimingParamsCard({
+  device,
+  canSendCommands,
+}: TimingParamsCardProps) {
+  const form = useForm<SetCooldownCommandInput>({
+    resolver: zodResolver(setCooldownCommandApiSchema),
     defaultValues: { scanCooldown: device.scanCooldown },
   });
+  const isBusy = form.formState.isSubmitting;
 
-  const handleSubmit = (values: TimingParamsValues) => {
-    form.clearErrors();
-    const result = timingParamsSchema.safeParse(values);
-
-    if (!result.success) {
-      for (const issue of result.error.issues) {
-        const field = issue.path[0];
-        if (typeof field === "string") {
-          form.setError(field as keyof TimingParamsValues, {
-            message: issue.message,
-          });
-        }
+  const handleSubmit = async (values: SetCooldownCommandInput) => {
+    try {
+      await submitDeviceCommand(device.id, "set-cooldown", values);
+      form.reset({
+        scanCooldown:
+          typeof values.scanCooldown === "number"
+            ? values.scanCooldown
+            : typeof values.cooldown_sec === "number"
+              ? values.cooldown_sec
+              : typeof values.cooldownSec === "number"
+                ? values.cooldownSec
+                : device.scanCooldown,
+      });
+    } catch (error) {
+      if (error instanceof CommandClientError) {
+        form.setError("root", {
+          message: error.message,
+        });
+        return;
       }
-      return;
-    }
 
-    form.reset(result.data);
+      form.setError("root", {
+        message: "Unexpected command failure",
+      });
+    }
   };
 
   return (
@@ -47,10 +67,12 @@ export function TimingParamsCard({ device }: { device: Device }) {
       tone="secondary"
       icon={<Activity className="size-5 text-emerald-100" />}
     >
-      <form
-        className="grid gap-4"
-        onSubmit={form.handleSubmit(handleSubmit)}
-      >
+      <form className="grid gap-4" onSubmit={form.handleSubmit(handleSubmit)}>
+        <InlineNote tone={canSendCommands ? "info" : "warning"}>
+          {canSendCommands
+            ? "Cooldown updates use shared schema and publish to device MQTT cmd topic."
+            : "Fixed device. Timing publish disabled until mobile device selected."}
+        </InlineNote>
         <div className="grid gap-3 md:grid-cols-3">
           <InfoBlock label="Cooldown" value={`${device.scanCooldown}s`} />
           <InfoBlock label="Battery" value={device.battery} />
@@ -59,8 +81,12 @@ export function TimingParamsCard({ device }: { device: Device }) {
         <div className="grid gap-2">
           <Label className="text-[var(--ink-soft)]">Scan cooldown seconds</Label>
           <Input
-            type="number"
             {...form.register("scanCooldown", { valueAsNumber: true })}
+            disabled={isBusy || !canSendCommands}
+            min={1}
+            max={999}
+            step={1}
+            type="number"
             className="h-10 rounded-lg border-[var(--line-subtle)] bg-black/10 text-white shadow-none"
           />
           {form.formState.errors.scanCooldown ? (
@@ -69,10 +95,17 @@ export function TimingParamsCard({ device }: { device: Device }) {
             </p>
           ) : null}
         </div>
+        {form.formState.errors.root?.message ? (
+          <InlineNote tone="error">{form.formState.errors.root.message}</InlineNote>
+        ) : null}
         <InlineNote tone="success">
           Cooldown rail clamps duplicate scan bursts during lane congestion and mesh retries.
         </InlineNote>
-        <Button className="h-10 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:brightness-110">
+        <Button
+          type="submit"
+          disabled={isBusy || !canSendCommands}
+          className="h-10 rounded-lg bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:brightness-110"
+        >
           Sync timing window
         </Button>
       </form>
