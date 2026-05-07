@@ -146,7 +146,7 @@ The DOCX draft contains these main report chapters. This markdown file tracks wh
 | UI-03 | Terminal feed displays MQTT/raw events. | Done | Screenshot after scenario run. |
 | UI-04 | SSE updates dashboard without full reload. | Partial | Screen recording or before/after evidence. |
 | UI-05 | Command panel posts mobile commands. | Partial | API success + command raw event. |
-| UI-06 | Package timeline visible in UI. | Not started | API exists; UI not needed if report uses API evidence. |
+| UI-06 | Recent package event evidence visible in UI. | Partial | `/simcon` package-event pane exists; full timeline still uses API evidence. |
 | UI-07 | Internal package management UI. | Not started | Planned table/search, create/edit form, detail, assignment/status controls. |
 | UI-08 | Live map. | Out of scope | N/A. |
 
