@@ -1,25 +1,18 @@
 "use client";
 
-import { Bell, Menu, Settings2, Terminal } from "lucide-react";
+import { Bell, Settings2, Terminal } from "lucide-react";
 import { AppSearchInput } from "@/components/ui/app-search-input";
-import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { MonoLabel } from "@/components/ui/mono-label";
 
 export function TopBar({
-  sidebarTrigger,
   terminalTrigger,
 }: {
-  sidebarTrigger?: React.ReactNode;
   terminalTrigger?: React.ReactNode;
 }) {
   return (
     <header className="flex flex-col gap-3 border-b border-[var(--line-subtle)] px-3 py-3 md:flex-row md:items-center md:justify-between md:px-4">
       <div className="flex items-center gap-3">
-        <div className="lg:hidden">{sidebarTrigger}</div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-sky-400/30 bg-sky-400/10 text-base font-semibold text-sky-100">
-          LC
-        </div>
         <div>
           <MonoLabel>Logistic Controls</MonoLabel>
           <h1 className="text-lg font-semibold tracking-[-0.01em] text-white md:text-xl">
@@ -58,13 +51,5 @@ function TopPill({ label, value }: { label: string; value: string }) {
       <MonoLabel className="text-[11px]">{label}</MonoLabel>
       <p className="text-sm font-medium text-white">{value}</p>
     </div>
-  );
-}
-
-export function SidebarMenuButton() {
-  return (
-    <IconButton aria-label="Open sidebar" className="rounded-lg">
-      <Menu />
-    </IconButton>
   );
 }

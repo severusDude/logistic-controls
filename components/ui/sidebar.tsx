@@ -32,6 +32,16 @@ function SidebarProvider({
   children: React.ReactNode;
 }) {
   const [collapsed, setCollapsed] = React.useState(defaultCollapsed);
+  const width = collapsed ? "76px" : "284px";
+
+  React.useEffect(() => {
+    document.documentElement.style.setProperty("--simcon-sidebar-width", width);
+
+    return () => {
+      document.documentElement.style.removeProperty("--simcon-sidebar-width");
+    };
+  }, [width]);
+
   const value = React.useMemo(
     () => ({
       collapsed,
@@ -58,8 +68,8 @@ function Sidebar({
       data-slot="sidebar"
       data-collapsed={collapsed}
       className={cn(
-        "hidden h-full shrink-0 border-r border-[var(--line-subtle)] bg-[var(--bg-panel)] transition-[width] duration-200 ease-out lg:flex lg:flex-col",
-        collapsed ? "lg:w-[76px]" : "lg:w-[284px]",
+        "sticky top-0 flex h-dvh shrink-0 flex-col border-r border-[var(--line-subtle)] bg-[var(--bg-panel)] transition-[width] duration-200 ease-out max-md:[&_[data-sidebar-label]]:sr-only",
+        collapsed ? "w-[76px]" : "w-[76px] md:w-[284px]",
         className,
       )}
       {...props}

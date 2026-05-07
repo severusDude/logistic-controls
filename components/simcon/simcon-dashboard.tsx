@@ -13,14 +13,13 @@ import {
   Boxes,
   Clock,
   MapPin,
-  Menu,
   PackageCheck,
   Radio,
   Terminal,
 } from "lucide-react";
 
 import { AppShell } from "@/components/layout/app-shell";
-import { MobileSideNav, SideNav } from "@/components/layout/side-nav";
+import { SideNav } from "@/components/layout/side-nav";
 import { TopBar } from "@/components/layout/top-bar";
 import { DeviceCommandPanel } from "@/components/simcon/command-panel/device-command-panel";
 import { DeviceTable } from "@/components/simcon/device-table/device-table";
@@ -35,7 +34,6 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { RealtimePackageEvent, RealtimeSnapshot } from "@/lib/backend/realtime/contracts";
@@ -156,34 +154,6 @@ export function SimconDashboard({
       <AppShell
         header={
           <TopBar
-            sidebarTrigger={
-              <Sheet>
-                <SheetTrigger
-                  render={
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="rounded-lg border-[var(--line-subtle)] bg-transparent text-[var(--ink-soft)] hover:border-[var(--line-accent)] hover:bg-[color:rgba(56,189,248,0.08)] lg:hidden"
-                    />
-                  }
-                >
-                  <Menu />
-                  <span className="sr-only">Open navigation</span>
-                </SheetTrigger>
-                <SheetContent
-                  side="left"
-                  className="w-[min(92vw,340px)] border-white/10 bg-[var(--bg-panel)] p-0 text-white"
-                >
-                  <SheetHeader className="border-b border-white/10 p-4">
-                    <SheetTitle className="text-white">Navigation</SheetTitle>
-                    <SheetDescription className="text-[var(--ink-soft)]">
-                      SimCon research console.
-                    </SheetDescription>
-                  </SheetHeader>
-                  <MobileSideNav navItems={navItems} />
-                </SheetContent>
-              </Sheet>
-            }
             terminalTrigger={
               <Button
                 type="button"
@@ -219,8 +189,8 @@ export function SimconDashboard({
 
         <Sheet open={terminalOpen} onOpenChange={setTerminalOpen}>
           <SheetContent
-            side="right"
-            className="w-[min(96vw,760px)] max-w-none border-white/10 bg-[var(--bg-shell)] p-0 text-white sm:max-w-none"
+            side="bottom"
+            className="!right-0 !bottom-0 !left-0 h-[min(54dvh,520px)] !w-auto max-w-none border-white/10 bg-[var(--bg-shell)] p-0 text-white sm:max-w-none lg:!left-[var(--simcon-sidebar-width)]"
           >
             <SheetHeader className="border-b border-white/10 p-4">
               <SheetTitle className="text-white">MQTT terminal</SheetTitle>
@@ -234,7 +204,7 @@ export function SimconDashboard({
                 paused={paused}
                 showOnlySelected={showOnlySelected}
                 onTogglePaused={() => setPaused((value) => !value)}
-                className="h-[calc(100dvh-7rem)] max-h-none md:h-[calc(100dvh-7rem)] md:max-h-none"
+                className="h-[calc(54dvh-7rem)] min-h-[220px] max-h-[400px] md:h-[calc(54dvh-7rem)] md:max-h-[400px]"
               />
             </div>
           </SheetContent>
