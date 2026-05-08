@@ -128,6 +128,113 @@ GAMBAR II.1 KERANGKA PEMIKIRAN
 
 Dengan kerangka tersebut, keberhasilan penelitian diukur dari kemampuan prototipe mengirim heartbeat, telemetry, dan scan event; menyimpan raw event; memperbarui status perangkat dan paket; memisahkan unknown RFID scan; serta menampilkan event melalui dashboard/API.
 
+## 3. Metodologi Penelitian
+
+### 3.1 Metode Penelitian
+
+Metode penelitian yang digunakan adalah metode prototyping dengan pendekatan perancangan dan pengujian skenario. Metode ini dipilih karena objek penelitian berupa sistem IoT yang perlu dibuktikan melalui alur kerja perangkat, komunikasi data, backend, database, dan dashboard. Fokus metodologi bukan membangun platform logistik produksi, melainkan merancang prototipe terbatas yang dapat menunjukkan apakah event RFID dan telemetry GPS dapat dikirim, disimpan, dan diamati secara konsisten.
+
+Prototipe disusun menggunakan simulasi perangkat ESP32 berbasis Wokwi, broker MQTT lokal, backend worker, PostgreSQL/Prisma, dan dashboard Next.js. Pengujian dilakukan melalui skenario operasional yang mewakili alur dasar pelacakan paket, seperti heartbeat perangkat, pengiriman telemetry GPS, scan RFID terdaftar, scan RFID tidak dikenal, duplicate scan, pembacaan timeline paket, dan observasi dashboard. Dengan metode ini, setiap komponen diuji berdasarkan bukti event, log, API response, atau tampilan dashboard, bukan berdasarkan asumsi desain semata.
+
+### 3.2 Tahapan Penelitian
+
+Tahapan penelitian disusun agar proses perancangan dan pengujian prototipe berjalan sistematis. Tahapan tersebut adalah sebagai berikut:
+
+1. Identifikasi masalah, yaitu menentukan masalah utama berupa keterbatasan visibilitas pelacakan paket dan kebutuhan pencatatan event berbasis perangkat.
+2. Studi literatur, yaitu mengkaji IoT, RFID, GPS, MQTT, smart logistics, dan penelitian terdahulu yang relevan dengan pelacakan logistik.
+3. Analisis kebutuhan sistem, yaitu menentukan kebutuhan perangkat, perangkat lunak, data, dan batasan prototipe.
+4. Perancangan sistem, yaitu menyusun arsitektur IoT, alur komunikasi MQTT, relasi perangkat-paket, dan alur observasi dashboard.
+5. Implementasi prototipe, yaitu menyiapkan simulasi ESP32/Wokwi, broker MQTT, backend worker, database, API, dan dashboard.
+6. Pengujian sistem, yaitu menjalankan skenario heartbeat, telemetry, scan RFID, unknown scan, duplicate scan, timeline API, dan observasi dashboard.
+7. Analisis hasil, yaitu membandingkan hasil pengujian dengan tujuan dan batasan penelitian.
+8. Penarikan kesimpulan, yaitu merumuskan pencapaian, keterbatasan, dan saran pengembangan.
+
+### 3.3 Analisis Kebutuhan Sistem
+
+Analisis kebutuhan sistem dibagi menjadi kebutuhan perangkat keras/simulasi dan kebutuhan perangkat lunak. Karena penelitian ini dibatasi sebagai prototipe simulasi, komponen fisik diposisikan sebagai model perangkat yang direpresentasikan di Wokwi. Tabel 2 menunjukkan komponen utama yang digunakan untuk membentuk perangkat IoT mobile, membaca identitas paket, menghasilkan telemetry lokasi, dan memberi indikator status perangkat.
+
+**Tabel 2 Kebutuhan hardware dan Komponen IoT**
+
+|  No | Komponen        | Modul                 | Spesifikasi                                                                    | Fungsi                                                               |
+| --: | --------------- | --------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+|   1 | Microcontroller | ESP32                 | WiFi-capable microcontroller, disimulasikan di Wokwi                           | Pusat kendali perangkat, koneksi jaringan, dan publisher MQTT.       |
+|   2 | GPS             | NEO-6M                | Modul GPS simulasi dengan data latitude, longitude, speed, dan fix state       | Menyediakan telemetry lokasi perangkat mobile.                       |
+|   3 | RFID Reader     | PN532                 | Reader RFID/NFC berbasis I2C pada simulasi Wokwi                               | Membaca UID/tag paket dan memicu scan event.                         |
+|   4 | RFID Tag        | Simulated card/tag    | UID deterministik seperti `DEADBEEF` dan `CAFEBABE`                            | Merepresentasikan identitas paket yang dipetakan ke EPC/tracking ID. |
+|   5 | Indikator       | LED                   | LED status WiFi, MQTT, RFID, dan GPS                                           | Memberi indikasi visual kondisi koneksi dan pembacaan perangkat.     |
+|   6 | Resistor        | Resistor simulasi     | Komponen pendukung rangkaian LED                                               | Membatasi arus pada rangkaian indikator.                             |
+|   7 | Breadboard      | Breadboard simulasi   | Media perakitan rangkaian virtual                                              | Menghubungkan komponen simulasi perangkat.                           |
+|   8 | Kabel           | Kabel jumper          | Koneksi antar pin ESP32, GPS, PN532, dan LED                                   | Menghubungkan jalur data dan daya pada simulasi.                     |
+|   9 | Laptop          | Komputer pengembangan | Menjalankan editor, Wokwi/PlatformIO, broker, backend, database, dan dashboard | Lingkungan pengembangan dan pengujian lokal.                         |
+
+Kebutuhan perangkat lunak meliputi alat untuk firmware, simulasi, komunikasi, backend, database, dan dashboard. Tabel 3 menunjukkan perangkat lunak yang digunakan dalam pengembangan dan pengujian prototipe.
+
+**Tabel 3 Kebutuhan Software Pengembangan dan Deployment IoT**
+
+|  No | Perangkat Lunak       | Fungsi                                                                             |
+| --: | --------------------- | ---------------------------------------------------------------------------------- |
+|   1 | Visual Studio Code    | Editor untuk firmware, backend, frontend, dan dokumentasi.                         |
+|   2 | PlatformIO            | Build dan manajemen project firmware ESP32.                                        |
+|   3 | Wokwi CLI & Simulator | Menjalankan simulasi ESP32, PN532, GPS, dan skenario RFID.                         |
+|   4 | Mosquitto             | Broker MQTT lokal untuk telemetry, scan, heartbeat, dan command.                   |
+|   5 | Node.js / pnpm        | Runtime dan package manager untuk backend worker dan aplikasi Next.js.             |
+|   6 | Next.js               | Framework API route dan dashboard SimCon.                                          |
+|   7 | MQTT.js               | MQTT client pada backend untuk subscribe/publish topic perangkat.                  |
+|   8 | Zod                   | Validasi schema payload telemetry, scan, heartbeat, dan command.                   |
+|   9 | Prisma                | ORM untuk akses data perangkat, paket, event, telemetry, heartbeat, dan raw event. |
+|  10 | PostgreSQL            | Database penyimpanan data prototipe dan bukti event.                               |
+
+### 3.4 Perancangan Sistem
+
+Perancangan sistem menggunakan arsitektur IoT berlapis. Gambar III.1 menunjukkan hubungan antara perception layer, network layer, dan application layer. Perception layer berisi warehouse device, fleet device, dan package tag. Package tag berperan sebagai identitas pasif paket, sedangkan fleet device membaca tag dan membawa telemetry lokasi. Dalam ruang lingkup penelitian ini, perangkat difokuskan pada simulasi mobile device dengan RFID dan GPS.
+
+GAMBAR III.1 ARSITEKTUR IOT LOGISTIC CONTROLS
+
+Network layer pada Gambar III.1 berisi MQTT message broker sebagai penghubung antara perangkat dan aplikasi. Perangkat menerbitkan heartbeat, telemetry, dan scan event ke broker. Backend service berlangganan topic yang relevan, menerima payload, lalu memproses data berdasarkan jenis event. Pemisahan melalui broker membuat perangkat tidak berkomunikasi langsung dengan dashboard, sehingga alur data dapat dikendalikan melalui backend.
+
+Application layer berisi backend service, PostgreSQL, dan Next.js dashboard. Backend service bertugas memvalidasi payload, menyimpan raw event, memperbarui device state, mencatat package event, dan menyimpan unknown scan jika EPC tidak ditemukan. PostgreSQL digunakan sebagai media persistence, sedangkan dashboard digunakan untuk observasi status perangkat, event feed, dan package timeline. Dengan rancangan ini, arsitektur prototipe mengikuti alur: perangkat menghasilkan data, MQTT mengirim data, backend memproses data, database menyimpan data, dan dashboard menampilkan data.
+
+### 3.5 Flowchart Sistem
+
+Gambar III.2 menunjukkan flowchart sistem dalam bentuk swimlane yang memisahkan peran package, device, app/database/network, dan dashboard. Alur dimulai dari paket yang sudah terdaftar dan memiliki tag RFID. Pada sisi perangkat, device melakukan setup, terhubung ke WiFi dan MQTT, lalu menerbitkan heartbeat. Heartbeat diterima backend dan ditampilkan pada dashboard sebagai status perangkat online.
+
+GAMBAR III.2 FLOWCHART SYSTEM
+
+Setelah koneksi awal terbentuk, perangkat memperoleh data GPS dan menerbitkan telemetry. Backend menerima telemetry, menyimpan data, dan memperbarui informasi lokasi perangkat. Dashboard kemudian menampilkan data lokasi atau status GPS sebagai bagian dari observasi sistem. Alur ini digunakan untuk memeriksa apakah data lokasi perangkat dapat sampai ke backend dan tersedia untuk kebutuhan pelacakan.
+
+Pada alur scan, PN532 membaca RFID tag paket. Perangkat menerbitkan scan event melalui MQTT. Backend menerima scan, melakukan lookup EPC ke data paket, lalu memperbarui tracking paket jika EPC terdaftar. Setelah package tracking update dibuat, raw event tetap dicatat sebagai bukti data masuk. Dashboard menampilkan pembaruan daftar paket dan event update agar perubahan dapat diamati oleh peneliti/operator.
+
+Flowchart juga memuat skenario kegagalan koneksi. Jika heartbeat tidak diterima dalam periode tertentu, backend dapat menandai perangkat sebagai offline dan dashboard memperbarui daftar perangkat. Jika perangkat mencoba reconnect, event yang tertahan dapat dikirim kembali sesuai mekanisme buffer pada firmware. Alur ini penting untuk menggambarkan bahwa sistem tidak hanya menguji event normal, tetapi juga kondisi koneksi terputus dan pemulihan koneksi.
+
+### 3.6 Skenario Implementasi
+
+Skenario implementasi disusun mengikuti urutan komponen dari infrastruktur ke observasi. Pertama, Mosquitto dijalankan sebagai broker MQTT lokal. Kedua, PostgreSQL dipastikan aktif dan Prisma digunakan untuk menyiapkan schema serta seed data yang berisi fasilitas, perangkat, dan paket/tag uji. Ketiga, backend worker dijalankan untuk berlangganan topic telemetry, scan, dan heartbeat dari perangkat.
+
+Setelah backend siap, simulasi ESP32/Wokwi dijalankan dengan konfigurasi perangkat mobile, modul GPS, PN532, dan RFID tag simulasi. Perangkat mengirim heartbeat untuk menunjukkan status hidup, telemetry untuk posisi perangkat, dan scan event ketika tag terbaca. Event dikirim ke MQTT broker dan diproses backend. Dashboard `/simcon` dibuka untuk mengamati device state, terminal event feed, package event evidence, dan command panel bila skenario command ikut diuji.
+
+Skenario implementasi utama meliputi pickup paket terdaftar, pembacaan dua paket, duplicate scan cooldown, scan RFID tidak dikenal, telemetry GPS periodik, heartbeat perangkat, offline timeout, dan command demonstrasi seperti force scan atau set cooldown. Setiap skenario diarahkan untuk menghasilkan bukti berupa log simulasi, raw MQTT event, data database, API response, atau tampilan dashboard.
+
+### 3.7 Metode Pengujian
+
+Metode pengujian dilakukan berbasis skenario. Parameter utama yang diamati adalah keberhasilan pengiriman data, kesesuaian payload, penyimpanan raw event, pembaruan state perangkat, pembaruan status paket, pemisahan unknown scan, dan keterlihatan data pada API/dashboard. Tabel 4 menunjukkan skenario uji yang digunakan untuk mengevaluasi prototipe.
+
+**Tabel 4 Metode Pengujian Sistem**
+
+| ID Pengujian | Skenario                | Observasi Utama                           | Kriteria Keberhasilan                                   |
+| ------------ | ----------------------- | ----------------------------------------- | ------------------------------------------------------- |
+| TC-01        | Device heartbeat        | Heartbeat MQTT, device state, raw event   | Heartbeat diterima, event tersimpan, perangkat online.  |
+| TC-02        | GPS telemetry           | Koordinat, timestamp, telemetry record    | Posisi perangkat tersimpan dan tampil di API/dashboard. |
+| TC-03        | Scan RFID terdaftar     | Scan payload, EPC lookup, package event   | EPC dikenali, event dibuat, timeline paket terbarui.    |
+| TC-04        | Scan RFID tidak dikenal | Unknown scan, raw event                   | Unknown scan tercatat tanpa mengubah paket terdaftar.   |
+| TC-05        | Duplicate scan cooldown | Jumlah event, duplicate handling          | Scan berulang tidak membuat pembaruan ganda.            |
+| TC-06        | Package timeline API    | Response timeline, urutan event           | API menampilkan riwayat event sesuai hasil scan.        |
+| TC-07        | Raw event API           | Raw telemetry, scan, heartbeat            | Raw event tersedia sebagai bukti data MQTT masuk.       |
+| TC-08        | Dashboard realtime/SSE  | Device list, event feed, package evidence | Dashboard memperbarui data tanpa reload manual.         |
+| TC-09        | Offline timeout         | Status perangkat, offline detector        | Perangkat menjadi offline setelah heartbeat timeout.    |
+| TC-10        | Command demonstrasi     | DeviceCommand, MQTT command event         | Command tercatat dan dikirim ke topic perangkat.        |
+
+Hasil pengujian tidak dinilai sebagai performa produksi. Evaluasi dibatasi pada bukti bahwa alur data prototipe berjalan sesuai skenario penelitian. Aspek seperti autentikasi produksi, broker ACL, geofence, live map, customer portal, ETA, route optimization, dan skalabilitas besar tidak menjadi parameter pengujian utama karena berada di luar batasan penelitian.
+
 ## Daftar Pustaka
 
 [1] I. Sergi, T. Montanaro, F. L. Benvenuto, and L. Patrono, "A smart and secure logistics system based on IoT and cloud technologies," _Sensors_, vol. 21, no. 6, Art. no. 2231, 2021, doi: 10.3390/s21062231.
