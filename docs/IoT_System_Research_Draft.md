@@ -235,6 +235,49 @@ Metode pengujian dilakukan berbasis skenario. Parameter utama yang diamati adala
 
 Hasil pengujian tidak dinilai sebagai performa produksi. Evaluasi dibatasi pada bukti bahwa alur data prototipe berjalan sesuai skenario penelitian. Aspek seperti autentikasi produksi, broker ACL, geofence, live map, customer portal, ETA, route optimization, dan skalabilitas besar tidak menjadi parameter pengujian utama karena berada di luar batasan penelitian.
 
+## 4. Hasil dan Pembahasan
+
+### 4.1 Hasil Implementasi Sistem
+
+Berdasarkan hasil implementasi, sistem [nama sistem] berhasil dibangun menggunakan [perangkat utama]. Sistem mampu melakukan [fungsi utama sistem]. Data yang dihasilkan dapat ditampilkan secara real-time pada [dashboard/aplikasi].
+
+#### 4.1.1 Implementasi Perangkat/Device Layer
+
+Rancangan perangkat Logistic Controls diimplementasikan pada platform simulasi IoT populer Wokwi. Gambar IV.1 menjelaskan diagram ....
+
+Gambar IV.1 Diagram Perangkat
+
+#### 4.1.2 Implementasi Network Layer
+
+#### 4.1.3 Implementasi Application Layer
+
+Dashboard...
+
+API...
+
+### 4.2 Hasil Pengujian
+
+Pengujian dilakukan untuk mengetahui performa sistem berdasarkan beberapa skenario.
+
+**Tabel 5 Hasil Pengujian Sistem**
+
+| ID  | Skenario | Parameter | Hasil |
+| --- | -------- | --------- | ----- |
+
+Hasil pengujian pada sistem yang dikembangkan berdasarkan Tabel 5 menunjukkan….
+
+### 4.3 Pembahasan
+
+Berdasarkan hasil pengujian, sistem menunjukkan bahwa [uraikan hasil utama]. Nilai pengujian pada parameter [sebutkan parameter] menunjukkan bahwa sistem [baik/cukup/masih perlu pengembangan]. Hasil tersebut dipengaruhi oleh [faktor jaringan, sensor, lingkungan, dataset, sumber daya perangkat, metode yang digunakan, dan lain-lain].
+
+### 4.4 Kelebihan dan Batasan Sistem
+
+Implementasi sistem pada tahap saat ini memiliki kelebihan dan batasan ….
+
+#### 4.4.1 Kelebihan
+
+#### 4.4.2 Batasan
+
 ## Daftar Pustaka
 
 [1] I. Sergi, T. Montanaro, F. L. Benvenuto, and L. Patrono, "A smart and secure logistics system based on IoT and cloud technologies," _Sensors_, vol. 21, no. 6, Art. no. 2231, 2021, doi: 10.3390/s21062231.
