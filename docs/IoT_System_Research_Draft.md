@@ -18,56 +18,293 @@ Berdasarkan permasalahan tersebut, penelitian ini mengembangkan prototipe sistem
 
 Berdasarkan latar belakang tersebut, rumusan masalah dalam penelitian ini adalah sebagai berikut:
 
-1. Bagaimana merancang arsitektur prototipe sistem pelacakan paket logistik berbasis IoT menggunakan RFID, GPS, MQTT, backend, dan dashboard sederhana?
-2. Bagaimana mengimplementasikan simulasi perangkat ESP32 yang mampu mengirim telemetry GPS, heartbeat, dan event scan RFID ke broker MQTT?
-3. Bagaimana backend memvalidasi payload MQTT, menyimpan raw event, memperbarui data perangkat, mencatat event paket berdasarkan RFID EPC, dan menyediakan pengelolaan data paket internal?
-4. Bagaimana dashboard/API dapat digunakan untuk mengamati status perangkat, riwayat event, timeline paket, dan data paket pada prototipe penelitian?
-5. Bagaimana hasil pengujian prototipe berdasarkan skenario telemetry, heartbeat, scan RFID terdaftar, scan RFID tidak dikenal, pengelolaan data paket, dan pembaruan status paket?
+1. Bagaimana merancang arsitektur prototipe sistem pelacakan paket logistik berbasis IoT yang mengintegrasikan RFID, GPS, MQTT, backend, dan dashboard?
+2. Bagaimana mengimplementasikan simulasi ESP32 untuk mengirim telemetry GPS, heartbeat, dan event scan RFID melalui MQTT?
+3. Bagaimana backend memvalidasi payload MQTT, menyimpan event, memperbarui status perangkat, mencatat event paket, dan mengelola data paket internal?
+4. Bagaimana dashboard/API digunakan untuk mengamati status perangkat, riwayat event, timeline paket, dan data paket?
+5. Bagaimana hasil pengujian prototipe pada skenario telemetry, heartbeat, scan RFID terdaftar, scan RFID tidak dikenal, pengelolaan data paket, dan pembaruan status paket
 
 ### 1.3 Tujuan Penelitian
 
 Tujuan dari penelitian ini adalah sebagai berikut:
 
-1. Merancang arsitektur prototipe pelacakan paket logistik berbasis IoT dengan komponen RFID, GPS, MQTT, backend persistence, dan dashboard/API observasi.
-2. Mengimplementasikan simulasi perangkat ESP32 berbasis Wokwi yang merepresentasikan perangkat mobile dengan kemampuan membaca tag RFID dan mengirim telemetry GPS.
-3. Mengimplementasikan komunikasi data menggunakan MQTT untuk pengiriman telemetry, heartbeat, dan event scan dari perangkat menuju backend.
-4. Mengimplementasikan backend yang memvalidasi payload, menyimpan raw MQTT event, memperbarui state perangkat, mencatat event paket, dan memisahkan scan RFID tidak dikenal.
-5. Menyediakan dashboard/API sederhana untuk mengamati device state, terminal event, package timeline, dan pengelolaan data paket internal sebagai bukti alur pelacakan.
-6. Menguji prototipe menggunakan skenario yang telah ditentukan untuk menilai keberhasilan pengiriman data, penyimpanan event, pengelolaan data paket, dan pembaruan status paket.
+1. Merancang arsitektur prototipe pelacakan paket logistik berbasis IoT yang mengintegrasikan RFID, GPS, MQTT, backend, dan dashboard/API.
+2. Mengimplementasikan simulasi ESP32 berbasis Wokwi sebagai perangkat mobile untuk membaca tag RFID dan mengirim telemetry GPS.
+3. Mengimplementasikan komunikasi MQTT untuk pengiriman telemetry, heartbeat, dan event scan dari perangkat ke backend.
+4. Mengembangkan backend untuk validasi payload, penyimpanan event, pembaruan state perangkat, pencatatan event paket, dan pemisahan scan RFID tidak dikenal.
+5. Menyediakan dashboard/API untuk observasi device state, event feed, package timeline, dan pengelolaan data paket internal.
+6. Menguji prototipe berdasarkan skenario pengiriman data, penyimpanan event, pengelolaan data paket, dan pembaruan status paket.
 
 ### 1.4 Manfaat Penelitian
 
 Manfaat yang diharapkan dari penelitian ini adalah sebagai berikut:
 
-1. Memberikan kontribusi akademik berupa rancangan dan implementasi prototipe pelacakan paket logistik berbasis IoT pada ruang lingkup simulasi.
-2. Menunjukkan penerapan integrasi RFID dan GPS untuk menghubungkan identitas paket dengan posisi perangkat dalam skenario logistik sederhana.
-3. Memberikan contoh pemanfaatan MQTT, backend validation, dan database persistence untuk membangun alur data IoT yang dapat diaudit melalui raw event.
-4. Menyediakan dasar pembelajaran praktis mengenai pengembangan sistem IoT end-to-end, mulai dari perangkat, komunikasi, backend, hingga dashboard observasi.
-5. Menjadi referensi awal bagi penelitian selanjutnya yang ingin mengembangkan fitur lanjutan seperti deployment perangkat fisik, keamanan broker, autentikasi pengguna, geofence, peta interaktif, notifikasi, atau optimasi rute.
+1. Memberikan kontribusi akademik berupa rancangan dan implementasi prototipe pelacakan paket logistik berbasis IoT dalam ruang lingkup simulasi.
+2. Menunjukkan integrasi RFID dan GPS untuk menghubungkan identitas paket dengan lokasi perangkat pada skenario logistik sederhana.
+3. Memberikan contoh penerapan MQTT, validasi backend, dan database persistence dalam alur data IoT yang dapat ditelusuri melalui raw event.
+4. Menyediakan referensi praktis pengembangan sistem IoT end-to-end, mulai dari perangkat, komunikasi, backend, hingga dashboard observasi.
+5. Menjadi dasar bagi penelitian lanjutan terkait perangkat fisik, keamanan broker, autentikasi, geofence, peta interaktif, notifikasi, dan optimasi rute.
 
 ### 1.5 Batasan Masalah
 
 Agar penelitian lebih terarah dan sesuai dengan kapasitas prototipe, batasan masalah dalam penelitian ini adalah sebagai berikut:
 
 1. Sistem yang dikembangkan merupakan prototipe penelitian, bukan sistem logistik komersial atau deployment produksi.
-2. Perangkat IoT direpresentasikan menggunakan simulasi ESP32/Wokwi dengan perilaku GPS dan RFID, bukan perangkat keras fisik yang dipasang pada kendaraan atau paket sebenarnya.
-3. Paket direpresentasikan sebagai tag RFID deterministik dalam skenario pengujian, dengan jumlah paket terbatas pada skala prototipe.
-4. Lokasi paket diperoleh melalui pendekatan device-centric, yaitu paket dikaitkan dengan lokasi GPS perangkat mobile setelah RFID tag terbaca.
-5. Komunikasi data menggunakan broker MQTT lokal untuk telemetry, heartbeat, scan event, dan command demonstrasi.
-6. Backend dibatasi pada validasi payload, penyimpanan raw event, pembaruan device state, pencatatan package event, penyimpanan telemetry, heartbeat, unknown scan, dan package CRUD internal untuk kebutuhan operator/peneliti.
-7. Database menggunakan PostgreSQL dengan Prisma sebagai ORM sesuai kebutuhan penyimpanan data prototipe.
-8. Dashboard/API yang disediakan hanya digunakan untuk observasi penelitian, yaitu melihat status perangkat, event feed, command sederhana, package timeline, dan pengelolaan data paket internal.
-9. Penelitian tidak membahas customer tracking portal, role-based access control, peta interaktif, geofence, notification center, email, route optimization, estimasi waktu kedatangan, multi-tenant deployment, atau pengujian skalabilitas besar.
-10. Aspek keamanan produksi seperti HTTPS, autentikasi penuh, otorisasi pengguna, broker ACL, dan hardening infrastruktur tidak diimplementasikan, tetapi dicatat sebagai keterbatasan dan arah pengembangan.
+2. Perangkat IoT dimodelkan melalui simulasi ESP32/Wokwi, dengan komponen berupa ESP32, PN532 RFID/NFC reader, GPS NEO6M, LED, resistor, breadboard, dan kabel jumper.
+3. Paket direpresentasikan sebagai tag RFID deterministik dengan jumlah terbatas sesuai skala prototipe.
+4. Lokasi paket menggunakan pendekatan device-centric, yaitu lokasi GPS perangkat mobile dikaitkan dengan paket setelah tag RFID terbaca.
+5. Komunikasi data dibatasi pada broker MQTT lokal untuk telemetry, heartbeat, scan event, dan command demonstrasi.
+6. Backend dibatasi pada validasi payload, penyimpanan event, pembaruan status perangkat, pencatatan package event, telemetry, heartbeat, unknown scan, serta package CRUD internal.
+7. Database menggunakan PostgreSQL dengan Prisma ORM untuk kebutuhan penyimpanan data prototipe.
+8. Dashboard/API hanya digunakan untuk observasi penelitian, meliputi status perangkat, event feed, command sederhana, package timeline, dan pengelolaan data paket internal.
+9. Penelitian tidak mencakup customer portal, RBAC, peta interaktif, geofence, notifikasi, email, optimasi rute, estimasi kedatangan, multi-tenant deployment, maupun pengujian skalabilitas besar.
+10. Aspek keamanan produksi seperti HTTPS, autentikasi penuh, otorisasi, broker ACL, dan hardening infrastruktur tidak diimplementasikan, tetapi dicatat sebagai keterbatasan dan arah pengembangan.
+
+## 2. Tinjauan Pustaka
+
+### 2.1 Konsep dan Teori Dasar
+
+Internet of Things (IoT) merupakan konsep yang menghubungkan perangkat fisik, sensor, aktuator, jaringan komunikasi, penyimpanan data, dan aplikasi agar objek di lingkungan nyata dapat menghasilkan data digital. Pada sistem logistik, IoT digunakan untuk meningkatkan visibilitas perpindahan barang melalui pencatatan event, pembacaan sensor, pelacakan aset, dan pemantauan kondisi operasional. Sergi et al. [1] menjelaskan bahwa sistem logistik berbasis IoT dan cloud dapat mendukung pelacakan barang, komunikasi perangkat, dan pengelolaan data pemantauan secara terhubung.
+
+Visibilitas rantai pasok berkaitan dengan kemampuan sistem untuk menyediakan informasi tentang posisi, status, dan riwayat pergerakan barang. Ahmed et al. [2] menempatkan IoT sebagai salah satu pendukung supply chain visibility karena data dari perangkat dapat dibagikan dan digunakan oleh aktor rantai pasok. Namun, visibilitas tidak otomatis muncul hanya karena penggunaan sensor. Sistem tetap memerlukan integrasi data, interoperabilitas, dan rancangan tata kelola yang menentukan bagaimana data dikumpulkan, divalidasi, disimpan, dan digunakan [2].
+
+Radio Frequency Identification (RFID) merupakan teknologi identifikasi objek menggunakan komunikasi radio antara tag dan reader. Dalam rantai pasok, RFID digunakan untuk mengidentifikasi produk, paket, kontainer, atau aset tanpa bergantung pada pencatatan manual. Tan dan Sidhu [6] menyebut integrasi RFID dan IoT sebagai RFID-IoT, yaitu pendekatan yang menggabungkan identifikasi otomatis dengan konektivitas internet untuk mendukung otomasi sensing, visibilitas, dan interoperabilitas proses supply chain.
+
+Global Positioning System (GPS) menyediakan informasi posisi geografis perangkat. Pada pelacakan logistik, GPS sering dikombinasikan dengan identitas barang agar catatan pengiriman tidak hanya berisi status, tetapi juga lokasi. C.-L. Chen et al. [7] menunjukkan pola tersebut melalui sistem logistik yang menggabungkan RFID dan GPS, yaitu identitas barang diperoleh dari pembacaan RFID, sedangkan lokasi diperoleh dari mobile reader yang memiliki kemampuan GPS. Kombinasi ini penting karena RFID menjawab pertanyaan "barang apa yang terbaca", sedangkan GPS menjawab "di mana perangkat pembaca berada".
+
+Message Queuing Telemetry Transport (MQTT) adalah protokol komunikasi ringan berbasis publish/subscribe. Silva et al. [8] menjelaskan bahwa MQTT dirancang untuk pemantauan jarak jauh, komunikasi asinkron, dan distribusi data melalui broker. Dalam model tersebut, publisher mengirim pesan ke topic, broker menerima pesan, lalu subscriber yang berlangganan topic terkait menerima data. Karakteristik ini membuat MQTT banyak digunakan dalam sistem IoT yang memerlukan pengiriman telemetry, event sensor, atau status perangkat secara periodik.
+
+ESP32 merupakan microcontroller yang umum digunakan pada prototipe IoT karena mendukung konektivitas jaringan dan integrasi sensor. D'Ortona et al. [9] menggunakan ESP32 sebagai node sensor dalam sistem IoT end-to-end berbasis MQTT dan web control panel. Wokwi sebagai simulator microcontroller dapat ditempatkan sebagai media prototyping untuk menguji alur perangkat tanpa harus langsung menggunakan perangkat fisik, terutama ketika tujuan awal adalah validasi perilaku logika, format payload, dan komunikasi sistem.
+
+### 2.2 Kelompok Penelitian Terdahulu
+
+Secara umum, kajian terdahulu menunjukkan bahwa penerapan Internet of Things (IoT) dalam logistik berkembang dari fungsi pemantauan operasional menuju sistem logistik cerdas yang terintegrasi, terlacak, dan strategis. Pada aspek visibilitas dan pemantauan logistik, Sergi et al. [1] menekankan peran IoT dan cloud dalam membangun sistem logistik cerdas yang mampu mendukung pelacakan, pemantauan, serta keamanan data. Sejalan dengan itu, Ahmed et al. [2] menjelaskan bahwa kontribusi utama IoT dalam rantai pasok terletak pada kemampuannya meningkatkan supply chain visibility melalui pertukaran data antar-aktor. Kvak dan Straka [4] juga memperlihatkan bahwa pemanfaatan sensor dan konektivitas data dalam distribusi barang konsumsi dapat memperkuat efektivitas proses distribusi. Dengan demikian, IoT berperan penting dalam menyediakan data real-time yang mendukung transparansi dan pengambilan keputusan dalam aktivitas logistik.
+
+Selain visibilitas, aspek identifikasi dan keterlacakan juga menjadi perhatian penting dalam pengembangan sistem logistik berbasis IoT. C.-L. Chen et al. [7] mengintegrasikan RFID, GPS, dan blockchain untuk membangun sistem logistik yang traceable dan verifiable. Dalam pendekatan tersebut, RFID berfungsi sebagai identitas barang, GPS menyediakan informasi lokasi, sedangkan blockchain menjaga integritas dan keandalan catatan transaksi. Tan dan Sidhu [6] turut menegaskan bahwa integrasi RFID dan IoT dalam supply chain management dapat mendukung otomasi identifikasi, pelacakan barang, serta peningkatan efisiensi proses. Hal ini menunjukkan bahwa kombinasi teknologi identifikasi, pelacakan lokasi, dan penyimpanan data yang aman merupakan fondasi penting bagi sistem logistik yang transparan dan dapat diverifikasi.
+
+Dari sisi arsitektur komunikasi, penelitian sebelumnya menekankan pentingnya pemilihan infrastruktur dan protokol yang sesuai untuk mendukung sistem IoT secara end-to-end. D’Ortona et al. [9] menunjukkan bahwa perangkat ESP32, MQTT broker, dan panel kontrol berbasis web dapat diintegrasikan dalam sistem IoT open-source, sehingga memperjelas peran broker sebagai penghubung antara perangkat edge dan aplikasi pemantauan. Sementara itu, Silva et al. [8] membandingkan MQTT, CoAP, dan OPC UA serta menunjukkan bahwa pemilihan protokol komunikasi harus disesuaikan dengan kebutuhan transport data, karakteristik komunikasi, dan skenario implementasi. Dengan demikian, keberhasilan sistem IoT logistik tidak hanya bergantung pada perangkat sensor, tetapi juga pada rancangan arsitektur komunikasi yang andal, efisien, dan sesuai dengan konteks penggunaan.
+
+Pada tingkat yang lebih strategis, IoT dalam logistik juga dikaitkan dengan optimasi sistem, tata kelola teknologi, dan transformasi menuju smart logistics. J. Chen et al. [3] menghubungkan IoT dan blockchain dengan optimasi lokasi gudang dalam sistem transportasi logistik cerdas. Hsu et al. [5] memperluas pembahasan smart logistics menuju Industry 5.0 dengan menekankan pentingnya integrasi teknologi digital, kolaborasi pemangku kepentingan, keberlanjutan, dan keamanan informasi. Temuan ini menunjukkan bahwa implementasi IoT dalam logistik tidak dapat dipahami hanya sebagai penggunaan sensor dan konektivitas, tetapi juga sebagai bagian dari desain sistem, strategi operasional, dan tata kelola teknologi yang lebih luas.
+
+Dapat disimpulkan bahwa penelitian terkait IoT dalam logistik mencakup empat dimensi utama, yaitu visibilitas operasional, identifikasi dan keterlacakan, arsitektur komunikasi, serta strategi smart logistics. Keempat dimensi tersebut saling melengkapi dalam membentuk sistem logistik cerdas yang mampu menyediakan data real-time, meningkatkan efisiensi proses, menjamin integritas informasi, dan mendukung pengambilan keputusan strategis.
+
+### 2.3 Perbandingan Temuan Penelitian Terdahulu
+
+**Tabel 1 State of The Art Sistem Logistik**
+
+| No  | Penelitian            | Tahun | Metode                                                                                     | Hasil Utama                                                                                                                    |
+| --- | --------------------- | ----: | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Sergi et al. [1]      |  2021 | Perancangan sistem logistik berbasis IoT dan cloud                                         | IoT dan cloud mendukung pelacakan barang, pemantauan jarak jauh, dan pengelolaan data logistik secara terhubung.               |
+| 2   | Ahmed et al. [2]      |  2021 | Review dyadic analysis tentang IoT untuk supply chain visibility                           | IoT meningkatkan visibilitas rantai pasok, tetapi membutuhkan integrasi, interoperabilitas, dan tata kelola data.              |
+| 3   | C.-L. Chen et al. [6] |  2021 | Perancangan sistem logistik traceable menggunakan GPS, RFID, dan blockchain                | RFID dapat mengidentifikasi barang, sedangkan GPS dari mobile reader dapat melengkapi catatan lokasi pengiriman.               |
+| 4   | D'Ortona et al. [7]   |  2022 | Implementasi sistem IoT end-to-end open-source berbasis ESP32, MQTT, dan web control panel | MQTT broker dapat menghubungkan node perangkat dengan aplikasi pemantauan berbasis web.                                        |
+| 5   | Silva et al. [8]      |  2021 | Evaluasi protokol MQTT, CoAP, dan OPC UA pada skenario IoT                                 | MQTT relevan untuk komunikasi IoT berbasis publish/subscribe, meskipun performa bergantung pada skenario dan kebutuhan sistem. |
+| 6   | Kvak dan Straka [4]   |  2024 | Kajian penerapan IoT pada distribusi barang konsumsi                                       | IoT berperan dalam pengumpulan dan pemanfaatan data distribusi untuk meningkatkan proses logistik.                             |
+| 7   | Hsu et al. [5]        |  2024 | Analisis enabler dan roadmap smart logistics menuju Industry 5.0                           | Smart logistics membutuhkan integrasi teknologi digital, kolaborasi stakeholder, dan perhatian pada keamanan informasi.        |
+| 8   | Tan dan Sidhu [9]     |  2022 | Systematic review integrasi RFID dan IoT dalam supply chain management                     | RFID-IoT mendukung otomasi sensing, visibilitas proses, dan pengembangan sistem supply chain yang lebih terhubung.             |
+
+Perbandingan temuan pada Tabel 1 menunjukkan empat pola utama. Pertama, IoT diposisikan sebagai teknologi pendukung visibilitas logistik melalui data perangkat, cloud, dan integrasi proses [1], [2], [4]. Kedua, RFID digunakan sebagai metode identifikasi objek, sedangkan GPS digunakan untuk menambahkan konteks lokasi pada catatan logistik [6], [7]. Ketiga, MQTT digunakan sebagai protokol komunikasi yang sesuai untuk pengiriman data IoT berbasis event dan telemetry [8], [9]. Keempat, smart logistics pada level strategis memerlukan integrasi yang lebih luas, termasuk optimasi, kolaborasi, keamanan, dan roadmap transformasi digital [3], [5].
+
+Perbedaan utama antar studi terletak pada cakupan dan titik beratnya. Studi IoT-cloud dan smart logistics cenderung menekankan arsitektur luas, strategi, dan faktor pendukung sistem [1], [3], [5]. Studi RFID-GPS lebih dekat dengan traceability objek karena memetakan identitas barang dengan lokasi perangkat pembaca [6], [7]. Studi MQTT dan sistem end-to-end memberi dasar teknis tentang bagaimana data dari perangkat dapat mengalir ke aplikasi pemantauan [8], [9]. Dengan demikian, literatur menunjukkan keterkaitan antara identifikasi, lokasi, komunikasi, penyimpanan, dan visualisasi, tetapi tiap kelompok biasanya menonjolkan salah satu aspek tertentu.
+
+### 2.5 Kerangka Pemikiran
+
+Kerangka pemikiran penelitian ini berangkat dari permasalahan rendahnya visibilitas pelacakan paket ketika pencatatan status masih dilakukan secara manual. Permasalahan tersebut menimbulkan kebutuhan terhadap sistem yang mampu mengidentifikasi paket, merekam lokasi perangkat pembaca, mengirim data ke backend, menyimpan event sebagai bukti, serta menampilkan riwayat paket secara teramati.
+
+Berdasarkan sintesis literatur, penelitian ini diposisikan sebagai pembuktian prototipe end-to-end berskala kecil, bukan sebagai pengembangan platform logistik produksi. Fokus penelitian diarahkan pada integrasi minimum antara RFID sebagai identitas paket, GPS sebagai konteks lokasi perangkat, MQTT sebagai kanal komunikasi event, backend sebagai media validasi dan penyimpanan data, serta dashboard/API sebagai sarana observasi.
+
+Dengan demikian, solusi yang dirancang berupa prototipe IoT berbasis pendekatan device-centric. Dalam pendekatan ini, identitas paket diperoleh melalui RFID, lokasi diperoleh dari GPS perangkat mobile, data dikirim melalui MQTT, diproses dan disimpan oleh backend, kemudian diamati melalui dashboard/API. Hubungan antar komponen tersebut ditunjukkan pada Gambar II.1.
+
+```text
+RFID package scan + GPS telemetry
+  -> ESP32/Wokwi simulated device
+  -> MQTT broker
+  -> backend validation and persistence
+  -> PostgreSQL/Prisma database
+  -> dashboard/API observation
+```
+
+GAMBAR II.1 KERANGKA PEMIKIRAN
+
+Dengan kerangka tersebut, keberhasilan penelitian diukur dari kemampuan prototipe mengirim heartbeat, telemetry, dan scan event; menyimpan raw event; memperbarui status perangkat dan paket; memisahkan unknown RFID scan; serta menampilkan event melalui dashboard/API.
+
+## 3. Metodologi Penelitian
+
+### 3.1 Metode Penelitian
+
+Metode penelitian yang digunakan adalah metode prototyping dengan pendekatan perancangan dan pengujian skenario. Metode ini dipilih karena objek penelitian berupa sistem IoT yang perlu dibuktikan melalui alur kerja perangkat, komunikasi data, backend, database, dan dashboard. Fokus metodologi bukan membangun platform logistik produksi, melainkan merancang prototipe terbatas yang dapat menunjukkan apakah event RFID dan telemetry GPS dapat dikirim, disimpan, dan diamati secara konsisten.
+
+Prototipe disusun menggunakan simulasi perangkat ESP32 berbasis Wokwi, broker MQTT lokal, backend worker, PostgreSQL/Prisma, dan dashboard Next.js. Pengujian dilakukan melalui skenario operasional yang mewakili alur dasar pelacakan paket, seperti heartbeat perangkat, pengiriman telemetry GPS, scan RFID terdaftar, scan RFID tidak dikenal, duplicate scan, pembacaan timeline paket, dan observasi dashboard. Dengan metode ini, setiap komponen diuji berdasarkan bukti event, log, API response, atau tampilan dashboard, bukan berdasarkan asumsi desain semata.
+
+### 3.2 Tahapan Penelitian
+
+Tahapan penelitian disusun agar proses perancangan dan pengujian prototipe berjalan sistematis. Tahapan tersebut adalah sebagai berikut:
+
+1. Identifikasi masalah, yaitu menentukan masalah utama berupa keterbatasan visibilitas pelacakan paket dan kebutuhan pencatatan event berbasis perangkat.
+2. Studi literatur, yaitu mengkaji IoT, RFID, GPS, MQTT, smart logistics, dan penelitian terdahulu yang relevan dengan pelacakan logistik.
+3. Analisis kebutuhan sistem, yaitu menentukan kebutuhan perangkat, perangkat lunak, data, dan batasan prototipe.
+4. Perancangan sistem, yaitu menyusun arsitektur IoT, alur komunikasi MQTT, relasi perangkat-paket, dan alur observasi dashboard.
+5. Implementasi prototipe, yaitu menyiapkan simulasi ESP32/Wokwi, broker MQTT, backend worker, database, API, dan dashboard.
+6. Pengujian sistem, yaitu menjalankan skenario heartbeat, telemetry, scan RFID, unknown scan, duplicate scan, timeline API, dan observasi dashboard.
+7. Analisis hasil, yaitu membandingkan hasil pengujian dengan tujuan dan batasan penelitian.
+8. Penarikan kesimpulan, yaitu merumuskan pencapaian, keterbatasan, dan saran pengembangan.
+
+### 3.3 Analisis Kebutuhan Sistem
+
+Analisis kebutuhan sistem dibagi menjadi kebutuhan perangkat keras/simulasi dan kebutuhan perangkat lunak. Karena penelitian ini dibatasi sebagai prototipe simulasi, komponen fisik diposisikan sebagai model perangkat yang direpresentasikan di Wokwi. Tabel 2 menunjukkan komponen utama yang digunakan untuk membentuk perangkat IoT mobile, membaca identitas paket, menghasilkan telemetry lokasi, dan memberi indikator status perangkat.
+
+**Tabel 2 Kebutuhan hardware dan Komponen IoT**
+
+|  No | Komponen        | Modul                 | Spesifikasi                                                                    | Fungsi                                                               |
+| --: | --------------- | --------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+|   1 | Microcontroller | ESP32                 | WiFi-capable microcontroller, disimulasikan di Wokwi                           | Pusat kendali perangkat, koneksi jaringan, dan publisher MQTT.       |
+|   2 | GPS             | NEO-6M                | Modul GPS simulasi dengan data latitude, longitude, speed, dan fix state       | Menyediakan telemetry lokasi perangkat mobile.                       |
+|   3 | RFID Reader     | PN532                 | Reader RFID/NFC berbasis I2C pada simulasi Wokwi                               | Membaca UID/tag paket dan memicu scan event.                         |
+|   4 | RFID Tag        | Simulated card/tag    | UID deterministik seperti `DEADBEEF` dan `CAFEBABE`                            | Merepresentasikan identitas paket yang dipetakan ke EPC/tracking ID. |
+|   5 | Indikator       | LED                   | LED status WiFi, MQTT, RFID, dan GPS                                           | Memberi indikasi visual kondisi koneksi dan pembacaan perangkat.     |
+|   6 | Resistor        | Resistor simulasi     | Komponen pendukung rangkaian LED                                               | Membatasi arus pada rangkaian indikator.                             |
+|   7 | Breadboard      | Breadboard simulasi   | Media perakitan rangkaian virtual                                              | Menghubungkan komponen simulasi perangkat.                           |
+|   8 | Kabel           | Kabel jumper          | Koneksi antar pin ESP32, GPS, PN532, dan LED                                   | Menghubungkan jalur data dan daya pada simulasi.                     |
+|   9 | Laptop          | Komputer pengembangan | Menjalankan editor, Wokwi/PlatformIO, broker, backend, database, dan dashboard | Lingkungan pengembangan dan pengujian lokal.                         |
+
+Kebutuhan perangkat lunak meliputi alat untuk firmware, simulasi, komunikasi, backend, database, dan dashboard. Tabel 3 menunjukkan perangkat lunak yang digunakan dalam pengembangan dan pengujian prototipe.
+
+**Tabel 3 Kebutuhan Software Pengembangan dan Deployment IoT**
+
+|  No | Perangkat Lunak       | Fungsi                                                                             |
+| --: | --------------------- | ---------------------------------------------------------------------------------- |
+|   1 | Visual Studio Code    | Editor untuk firmware, backend, frontend, dan dokumentasi.                         |
+|   2 | PlatformIO            | Build dan manajemen project firmware ESP32.                                        |
+|   3 | Wokwi CLI & Simulator | Menjalankan simulasi ESP32, PN532, GPS, dan skenario RFID.                         |
+|   4 | Mosquitto             | Broker MQTT lokal untuk telemetry, scan, heartbeat, dan command.                   |
+|   5 | Node.js / pnpm        | Runtime dan package manager untuk backend worker dan aplikasi Next.js.             |
+|   6 | Next.js               | Framework API route dan dashboard SimCon.                                          |
+|   7 | MQTT.js               | MQTT client pada backend untuk subscribe/publish topic perangkat.                  |
+|   8 | Zod                   | Validasi schema payload telemetry, scan, heartbeat, dan command.                   |
+|   9 | Prisma                | ORM untuk akses data perangkat, paket, event, telemetry, heartbeat, dan raw event. |
+|  10 | PostgreSQL            | Database penyimpanan data prototipe dan bukti event.                               |
+
+### 3.4 Perancangan Sistem
+
+Perancangan sistem menggunakan arsitektur IoT berlapis. Gambar III.1 menunjukkan hubungan antara perception layer, network layer, dan application layer. Perception layer berisi warehouse device, fleet device, dan package tag. Package tag berperan sebagai identitas pasif paket, sedangkan fleet device membaca tag dan membawa telemetry lokasi. Dalam ruang lingkup penelitian ini, perangkat difokuskan pada simulasi mobile device dengan RFID dan GPS.
+
+GAMBAR III.1 ARSITEKTUR IOT LOGISTIC CONTROLS
+
+Network layer pada Gambar III.1 berisi MQTT message broker sebagai penghubung antara perangkat dan aplikasi. Perangkat menerbitkan heartbeat, telemetry, dan scan event ke broker. Backend service berlangganan topic yang relevan, menerima payload, lalu memproses data berdasarkan jenis event. Pemisahan melalui broker membuat perangkat tidak berkomunikasi langsung dengan dashboard, sehingga alur data dapat dikendalikan melalui backend.
+
+Application layer berisi backend service, PostgreSQL, dan Next.js dashboard. Backend service bertugas memvalidasi payload, menyimpan raw event, memperbarui device state, mencatat package event, dan menyimpan unknown scan jika EPC tidak ditemukan. PostgreSQL digunakan sebagai media persistence, sedangkan dashboard digunakan untuk observasi status perangkat, event feed, dan package timeline. Dengan rancangan ini, arsitektur prototipe mengikuti alur: perangkat menghasilkan data, MQTT mengirim data, backend memproses data, database menyimpan data, dan dashboard menampilkan data.
+
+### 3.5 Flowchart Sistem
+
+Gambar III.2 menunjukkan flowchart sistem dalam bentuk swimlane yang memisahkan peran package, device, app/database/network, dan dashboard. Alur dimulai dari paket yang sudah terdaftar dan memiliki tag RFID. Pada sisi perangkat, device melakukan setup, terhubung ke WiFi dan MQTT, lalu menerbitkan heartbeat. Heartbeat diterima backend dan ditampilkan pada dashboard sebagai status perangkat online.
+
+GAMBAR III.2 FLOWCHART SYSTEM
+
+Setelah koneksi awal terbentuk, perangkat memperoleh data GPS dan menerbitkan telemetry. Backend menerima telemetry, menyimpan data, dan memperbarui informasi lokasi perangkat. Dashboard kemudian menampilkan data lokasi atau status GPS sebagai bagian dari observasi sistem. Alur ini digunakan untuk memeriksa apakah data lokasi perangkat dapat sampai ke backend dan tersedia untuk kebutuhan pelacakan.
+
+Pada alur scan, PN532 membaca RFID tag paket. Perangkat menerbitkan scan event melalui MQTT. Backend menerima scan, melakukan lookup EPC ke data paket, lalu memperbarui tracking paket jika EPC terdaftar. Setelah package tracking update dibuat, raw event tetap dicatat sebagai bukti data masuk. Dashboard menampilkan pembaruan daftar paket dan event update agar perubahan dapat diamati oleh peneliti/operator.
+
+Flowchart juga memuat skenario kegagalan koneksi. Jika heartbeat tidak diterima dalam periode tertentu, backend dapat menandai perangkat sebagai offline dan dashboard memperbarui daftar perangkat. Jika perangkat mencoba reconnect, event yang tertahan dapat dikirim kembali sesuai mekanisme buffer pada firmware. Alur ini penting untuk menggambarkan bahwa sistem tidak hanya menguji event normal, tetapi juga kondisi koneksi terputus dan pemulihan koneksi.
+
+### 3.6 Skenario Implementasi
+
+Skenario implementasi disusun mengikuti urutan komponen dari infrastruktur ke observasi. Pertama, Mosquitto dijalankan sebagai broker MQTT lokal. Kedua, PostgreSQL dipastikan aktif dan Prisma digunakan untuk menyiapkan schema serta seed data yang berisi fasilitas, perangkat, dan paket/tag uji. Ketiga, backend worker dijalankan untuk berlangganan topic telemetry, scan, dan heartbeat dari perangkat.
+
+Setelah backend siap, simulasi ESP32/Wokwi dijalankan dengan konfigurasi perangkat mobile, modul GPS, PN532, dan RFID tag simulasi. Perangkat mengirim heartbeat untuk menunjukkan status hidup, telemetry untuk posisi perangkat, dan scan event ketika tag terbaca. Event dikirim ke MQTT broker dan diproses backend. Dashboard `/simcon` dibuka untuk mengamati device state, terminal event feed, package event evidence, dan command panel bila skenario command ikut diuji.
+
+Skenario implementasi utama meliputi pickup paket terdaftar, pembacaan dua paket, duplicate scan cooldown, scan RFID tidak dikenal, telemetry GPS periodik, heartbeat perangkat, offline timeout, dan command demonstrasi seperti force scan atau set cooldown. Setiap skenario diarahkan untuk menghasilkan bukti berupa log simulasi, raw MQTT event, data database, API response, atau tampilan dashboard.
+
+### 3.7 Metode Pengujian
+
+Metode pengujian dilakukan berbasis skenario. Parameter utama yang diamati adalah keberhasilan pengiriman data, kesesuaian payload, penyimpanan raw event, pembaruan state perangkat, pembaruan status paket, pemisahan unknown scan, dan keterlihatan data pada API/dashboard. Tabel 4 menunjukkan skenario uji yang digunakan untuk mengevaluasi prototipe.
+
+**Tabel 4 Metode Pengujian Sistem**
+
+| ID Pengujian | Skenario                | Observasi Utama                           | Kriteria Keberhasilan                                   |
+| ------------ | ----------------------- | ----------------------------------------- | ------------------------------------------------------- |
+| TC-01        | Device heartbeat        | Heartbeat MQTT, device state, raw event   | Heartbeat diterima, event tersimpan, perangkat online.  |
+| TC-02        | GPS telemetry           | Koordinat, timestamp, telemetry record    | Posisi perangkat tersimpan dan tampil di API/dashboard. |
+| TC-03        | Scan RFID terdaftar     | Scan payload, EPC lookup, package event   | EPC dikenali, event dibuat, timeline paket terbarui.    |
+| TC-04        | Scan RFID tidak dikenal | Unknown scan, raw event                   | Unknown scan tercatat tanpa mengubah paket terdaftar.   |
+| TC-05        | Duplicate scan cooldown | Jumlah event, duplicate handling          | Scan berulang tidak membuat pembaruan ganda.            |
+| TC-06        | Package timeline API    | Response timeline, urutan event           | API menampilkan riwayat event sesuai hasil scan.        |
+| TC-07        | Raw event API           | Raw telemetry, scan, heartbeat            | Raw event tersedia sebagai bukti data MQTT masuk.       |
+| TC-08        | Dashboard realtime/SSE  | Device list, event feed, package evidence | Dashboard memperbarui data tanpa reload manual.         |
+| TC-09        | Offline timeout         | Status perangkat, offline detector        | Perangkat menjadi offline setelah heartbeat timeout.    |
+| TC-10        | Command demonstrasi     | DeviceCommand, MQTT command event         | Command tercatat dan dikirim ke topic perangkat.        |
+
+Pengujian non-disruptive dilakukan pada 9 Mei 2026 dengan kondisi client, worker, perangkat simulasi, dan PostgreSQL sudah berjalan. Pengujian ini tidak menghentikan heartbeat perangkat dan tidak mengirim command baru ke perangkat, sehingga TC-09 dan TC-10 tidak dieksekusi pada putaran ini. Bukti pengujian disimpan pada `logs/tc-nondisruptive-2026-05-09-results.md`, output API pada `logs/tc-nondisruptive-2026-05-09-api-output.txt`, output database read-only pada `logs/tc-nondisruptive-2026-05-09-db-readonly-output.txt`, bukti Next Devtools pada `logs/tc-nondisruptive-2026-05-09-next-devtools-output.txt`, serta screenshot dashboard pada `logs/tc-08-simcon-dashboard-2026-05-09.png` dan `logs/tc-07-tc-08-terminal-feed-2026-05-09.png`.
+
+Hasil pengujian tidak dinilai sebagai performa produksi. Evaluasi dibatasi pada bukti bahwa alur data prototipe berjalan sesuai skenario penelitian. Aspek seperti autentikasi produksi, broker ACL, geofence, live map, customer portal, ETA, route optimization, dan skalabilitas besar tidak menjadi parameter pengujian utama karena berada di luar batasan penelitian.
+
+## 4. Hasil dan Pembahasan
+
+### 4.1 Hasil Implementasi Sistem
+
+Berdasarkan hasil implementasi, sistem [nama sistem] berhasil dibangun menggunakan [perangkat utama]. Sistem mampu melakukan [fungsi utama sistem]. Data yang dihasilkan dapat ditampilkan secara real-time pada [dashboard/aplikasi].
+
+#### 4.1.1 Implementasi Perangkat/Device Layer
+
+Rancangan perangkat Logistic Controls diimplementasikan pada platform simulasi IoT populer Wokwi. Gambar IV.1 menjelaskan diagram ....
+
+Gambar IV.1 Diagram Perangkat
+
+#### 4.1.2 Implementasi Network Layer
+
+#### 4.1.3 Implementasi Application Layer
+
+Dashboard...
+
+API...
+
+### 4.2 Hasil Pengujian
+
+Pengujian dilakukan untuk mengetahui performa sistem berdasarkan beberapa skenario.
+
+**Tabel 5 Hasil Pengujian Sistem**
+
+| ID    | Skenario                | Parameter                                   | Hasil                                                                                                                                                                                          |
+| ----- | ----------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TC-01 | Device heartbeat        | Raw heartbeat, heartbeat row, device state  | Pass. Raw heartbeat tersedia dan event heartbeat tersimpan.                                                                                                                                    |
+| TC-02 | GPS telemetry           | Raw telemetry, telemetry row, koordinat GPS | Pass. Raw telemetry tersedia, telemetry row tersimpan, dan koordinat GPS perangkat terlihat pada API/dashboard.                                                                                |
+| TC-03 | Scan RFID terdaftar     | Raw scan, EPC lookup, package event         | Belum teramati. Raw scan tersedia, tetapi EPC yang diterima (`LOG-PKG-20260506-JKTWH-00001`) tidak cocok dengan EPC seeded package, sehingga `PackageEvent` dan timeline package masih kosong. |
+| TC-04 | Scan RFID tidak dikenal | Raw scan, unknown scan quarantine           | Belum teramati/gap. Raw scan dengan EPC non-seeded tersedia, tetapi tabel `UnknownScan` masih kosong pada capture read-only, sehingga bukti quarantine belum muncul.                           |
+| TC-06 | Package timeline API    | HTTP response dan isi timeline              | Partial. Endpoint timeline package mengembalikan HTTP 200 untuk tiga tracking ID seeded, tetapi timeline masih kosong karena belum ada known scan yang membuat package event.                  |
+| TC-07 | Raw event API           | Raw telemetry, scan, heartbeat              | Lulus. Raw event API menampilkan event heartbeat, telemetry, dan scan sebagai bukti data MQTT masuk.                                                                                           |
+| TC-08 | Dashboard realtime/SSE  | Render dashboard, terminal feed, SSE        | Partial. `/simcon` berhasil render dashboard DB-backed dan terminal feed tanpa error runtime, tetapi pembaruan SSE live tanpa reload belum dibuktikan pada capture non-disruptive.             |
+| TC-09 | Offline timeout         | Offline detector                            | Tidak dieksekusi. Dilewati karena pengujian offline timeout perlu menghentikan atau menunggu heartbeat timeout.                                                                                |
+| TC-10 | Command demonstrasi     | DeviceCommand dan MQTT command event        | Tidak dieksekusi. Dilewati karena command publish memberi side effect ke perangkat.                                                                                                            |
+
+Hasil pengujian pada sistem yang dikembangkan berdasarkan Tabel 5 menunjukkan bahwa alur observasi raw event dan telemetry sudah dapat dibuktikan, sedangkan pembuktian package event, unknown scan quarantine, dan SSE live update masih membutuhkan skenario lanjutan yang menghasilkan EPC sesuai data seed atau event baru yang dapat diamati.
+
+### 4.3 Pembahasan
+
+Berdasarkan hasil pengujian, sistem menunjukkan bahwa [uraikan hasil utama]. Nilai pengujian pada parameter [sebutkan parameter] menunjukkan bahwa sistem [baik/cukup/masih perlu pengembangan]. Hasil tersebut dipengaruhi oleh [faktor jaringan, sensor, lingkungan, dataset, sumber daya perangkat, metode yang digunakan, dan lain-lain].
+
+### 4.4 Kelebihan dan Batasan Sistem
+
+Implementasi sistem pada tahap saat ini memiliki kelebihan dan batasan ….
+
+#### 4.4.1 Kelebihan
+
+#### 4.4.2 Batasan
 
 ## Daftar Pustaka
 
-[1] I. Sergi, T. Montanaro, F. L. Benvenuto, and L. Patrono, "A smart and secure logistics system based on IoT and cloud technologies," *Sensors*, vol. 21, no. 6, Art. no. 2231, 2021, doi: 10.3390/s21062231.
+[1] I. Sergi, T. Montanaro, F. L. Benvenuto, and L. Patrono, "A smart and secure logistics system based on IoT and cloud technologies," _Sensors_, vol. 21, no. 6, Art. no. 2231, 2021, doi: 10.3390/s21062231.
 
-[2] S. Ahmed *et al*., "Towards supply chain visibility using Internet of Things: A dyadic analysis review," *Sensors*, vol. 21, no. 12, Art. no. 4158, 2021, doi: 10.3390/s21124158.
+[2] S. Ahmed _et al_., "Towards supply chain visibility using Internet of Things: A dyadic analysis review," _Sensors_, vol. 21, no. 12, Art. no. 4158, 2021, doi: 10.3390/s21124158.
 
-[3] J. Chen, S. Xu, K. Liu, S. Yao, X. Luo, and H. Wu, "Intelligent transportation logistics optimal warehouse location method based on Internet of Things and blockchain technology," *Sensors*, vol. 22, no. 4, Art. no. 1544, 2022, doi: 10.3390/s22041544.
+[3] J. Chen, S. Xu, K. Liu, S. Yao, X. Luo, and H. Wu, "Intelligent transportation logistics optimal warehouse location method based on Internet of Things and blockchain technology," _Sensors_, vol. 22, no. 4, Art. no. 1544, 2022, doi: 10.3390/s22041544.
 
-[4] K. Kvak and M. Straka, "The use of the Internet of Things in the distribution logistics of consumables," *Applied Sciences*, vol. 14, no. 8, Art. no. 3263, 2024, doi: 10.3390/app14083263.
+[4] K. Kvak and M. Straka, "The use of the Internet of Things in the distribution logistics of consumables," _Applied Sciences_, vol. 14, no. 8, Art. no. 3263, 2024, doi: 10.3390/app14083263.
 
-[5] C.-H. Hsu, X.-Q. Cai, T.-Y. Zhang, and Y.-L. Ji, "Smart logistics facing Industry 5.0: Research on key enablers and strategic roadmap," *Sustainability*, vol. 16, no. 21, Art. no. 9183, 2024, doi: 10.3390/su16219183.
+[5] C.-H. Hsu, X.-Q. Cai, T.-Y. Zhang, and Y.-L. Ji, "Smart logistics facing Industry 5.0: Research on key enablers and strategic roadmap," _Sustainability_, vol. 16, no. 21, Art. no. 9183, 2024, doi: 10.3390/su16219183.
+
+[6] C.-L. Chen, Z.-Y. Lim, H.-C. Liao, Y.-Y. Deng, and P. Chen, "A traceable and verifiable tobacco products logistics system with GPS and RFID technologies," _Applied Sciences_, vol. 11, no. 11, Art. no. 4939, 2021, doi: 10.3390/app11114939.
+
+[7] C. D'Ortona, D. Tarchi, and C. Raffaelli, "Open-source MQTT-based end-to-end IoT system for smart city scenarios," _Future Internet_, vol. 14, no. 2, Art. no. 57, 2022, doi: 10.3390/fi14020057.
+
+[8] D. Silva, L. I. Carvalho, J. Soares, and R. C. Sofia, "A performance analysis of Internet of Things networking protocols: Evaluating MQTT, CoAP, OPC UA," _Applied Sciences_, vol. 11, no. 11, Art. no. 4879, 2021, doi: 10.3390/app11114879.
+
+[9] W. C. Tan and M. S. Sidhu, "Review of RFID and IoT integration in supply chain management," _Operations Research Perspectives_, vol. 9, Art. no. 100229, 2022, doi: 10.1016/j.orp.2022.100229.

@@ -11,6 +11,7 @@ export default async function SimconPage() {
     <SimconDashboard
       devices={snapshot.devices}
       navItems={navItems}
+      packageEvents={snapshot.packageEvents}
       terminalEntries={snapshot.terminalEntries}
     />
   );

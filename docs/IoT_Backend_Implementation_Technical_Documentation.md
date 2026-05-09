@@ -704,26 +704,35 @@ PostgreSQL remains an external/local prerequisite through `DATABASE_URL`. The ba
 
 ## 14. Research Completion Gaps
 
+Non-disruptive evidence was captured on May 9, 2026 and stored under `logs/`:
+
+- `logs/tc-nondisruptive-2026-05-09-api-output.txt`
+- `logs/tc-nondisruptive-2026-05-09-summary.json`
+- `logs/tc-nondisruptive-2026-05-09-db-readonly-output.txt`
+- `logs/tc-nondisruptive-2026-05-09-results.md`
+
+Captured backend state: `/api/health`, `/api/devices`, `/api/internal/raw-events`, and all three seeded package timeline endpoints returned HTTP 200. Raw MQTT evidence contained heartbeat, telemetry, and scan events. Read-only database evidence showed 68 raw heartbeat events, 791 raw telemetry events, 114 raw scan events, 5 persisted telemetry rows, 1 persisted heartbeat row, 0 package events, and 0 unknown scans. `DEV-TRUCK-001` was `offline` during capture, so heartbeat online-state proof remains partial.
+
 Backend areas needed before final research report evidence:
 
 1. **Final integrated run evidence**
-   - Capture worker startup log.
-   - Capture raw event API output after device scenario.
-   - Capture device detail API output after telemetry/heartbeat.
+   - Raw event API and device API output were captured on May 9, 2026.
+   - Worker startup log is still not captured in this evidence set.
 
 2. **Known package scan proof**
    - Run or replay known EPC scan scenario.
-   - Verify package event creation.
-   - Verify `/api/packages/{trackingId}/timeline` response.
+   - Verify package event creation and `/api/packages/{trackingId}/timeline` response with a seeded EPC.
+   - May 9 evidence did not satisfy this: scan EPC did not match seeded package EPCs and timelines were empty.
 
 3. **Telemetry and heartbeat proof**
-   - Verify telemetry history and latest device GPS fields.
-   - Verify heartbeat history and online state.
+   - Telemetry history and latest device GPS fields were captured.
+   - Heartbeat raw and persisted rows were captured, but online state was not captured because device state was `offline`.
    - Optionally stop heartbeat long enough to prove offline detector.
 
 4. **Unknown scan proof**
    - Send or simulate unregistered EPC.
    - Verify `UnknownScan` record and no package status update.
+   - May 9 evidence captured raw scan events with non-seeded EPC, but no `UnknownScan` rows.
 
 5. **Optional command proof**
    - POST force-scan or configuration command.
@@ -781,13 +790,13 @@ Backend areas needed before final research report evidence:
 | MQTT mobile telemetry ingestion | Implemented |
 | MQTT mobile scan ingestion | Implemented partial |
 | MQTT mobile heartbeat ingestion | Implemented |
-| Unknown scan quarantine | Implemented |
+| Unknown scan quarantine | Implemented, but no May 9 evidence captured |
 | Offline detector | Implemented partial |
 | Mobile command publish | Implemented partial |
-| Final integrated evidence | Pending |
-| Known package timeline evidence | Pending |
-| Telemetry/heartbeat API evidence | Pending |
-| Dashboard evidence | Pending |
+| Final integrated evidence | Partial evidence captured May 9, 2026 |
+| Known package timeline evidence | Not observed; seeded timelines empty |
+| Telemetry/heartbeat API evidence | Partial; telemetry captured, heartbeat online state not captured |
+| Dashboard evidence | Captured via frontend screenshots |
 | Command round-trip evidence | Optional/pending |
 | Auth/JWT/session | Out of scope |
 | RBAC enforcement | Out of scope |
@@ -849,7 +858,7 @@ Expected local prerequisites:
 - Current mobile scan schema is narrower than firmware/device architecture documentation.
 - Backend time-window duplicate suppression is missing; firmware cooldown remains primary duplicate guard.
 - Docker Compose includes only Mosquitto; database and app processes must be started separately.
-- Final integrated evidence is still pending, so report conclusions must not overclaim verified behavior.
+- Final integrated evidence is partial; May 9, 2026 evidence proves raw event and telemetry observation, but not known package timeline, unknown scan quarantine, heartbeat online state, command acknowledgement, or offline timeout.
 
 ---
 
