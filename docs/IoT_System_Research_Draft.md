@@ -233,6 +233,8 @@ Metode pengujian dilakukan berbasis skenario. Parameter utama yang diamati adala
 | TC-09        | Offline timeout         | Status perangkat, offline detector        | Perangkat menjadi offline setelah heartbeat timeout.    |
 | TC-10        | Command demonstrasi     | DeviceCommand, MQTT command event         | Command tercatat dan dikirim ke topic perangkat.        |
 
+Pengujian non-disruptive dilakukan pada 9 Mei 2026 dengan kondisi client, worker, perangkat simulasi, dan PostgreSQL sudah berjalan. Pengujian ini tidak menghentikan heartbeat perangkat dan tidak mengirim command baru ke perangkat, sehingga TC-09 dan TC-10 tidak dieksekusi pada putaran ini. Bukti pengujian disimpan pada `logs/tc-nondisruptive-2026-05-09-results.md`, output API pada `logs/tc-nondisruptive-2026-05-09-api-output.txt`, output database read-only pada `logs/tc-nondisruptive-2026-05-09-db-readonly-output.txt`, bukti Next Devtools pada `logs/tc-nondisruptive-2026-05-09-next-devtools-output.txt`, serta screenshot dashboard pada `logs/tc-08-simcon-dashboard-2026-05-09.png` dan `logs/tc-07-tc-08-terminal-feed-2026-05-09.png`.
+
 Hasil pengujian tidak dinilai sebagai performa produksi. Evaluasi dibatasi pada bukti bahwa alur data prototipe berjalan sesuai skenario penelitian. Aspek seperti autentikasi produksi, broker ACL, geofence, live map, customer portal, ETA, route optimization, dan skalabilitas besar tidak menjadi parameter pengujian utama karena berada di luar batasan penelitian.
 
 ## 4. Hasil dan Pembahasan
@@ -261,10 +263,19 @@ Pengujian dilakukan untuk mengetahui performa sistem berdasarkan beberapa skenar
 
 **Tabel 5 Hasil Pengujian Sistem**
 
-| ID  | Skenario | Parameter | Hasil |
-| --- | -------- | --------- | ----- |
+| ID    | Skenario                | Parameter                                   | Hasil                                                                                                                                                                                          |
+| ----- | ----------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TC-01 | Device heartbeat        | Raw heartbeat, heartbeat row, device state  | Pass. Raw heartbeat tersedia dan event heartbeat tersimpan.                                                                                                                                    |
+| TC-02 | GPS telemetry           | Raw telemetry, telemetry row, koordinat GPS | Pass. Raw telemetry tersedia, telemetry row tersimpan, dan koordinat GPS perangkat terlihat pada API/dashboard.                                                                                |
+| TC-03 | Scan RFID terdaftar     | Raw scan, EPC lookup, package event         | Belum teramati. Raw scan tersedia, tetapi EPC yang diterima (`LOG-PKG-20260506-JKTWH-00001`) tidak cocok dengan EPC seeded package, sehingga `PackageEvent` dan timeline package masih kosong. |
+| TC-04 | Scan RFID tidak dikenal | Raw scan, unknown scan quarantine           | Belum teramati/gap. Raw scan dengan EPC non-seeded tersedia, tetapi tabel `UnknownScan` masih kosong pada capture read-only, sehingga bukti quarantine belum muncul.                           |
+| TC-06 | Package timeline API    | HTTP response dan isi timeline              | Partial. Endpoint timeline package mengembalikan HTTP 200 untuk tiga tracking ID seeded, tetapi timeline masih kosong karena belum ada known scan yang membuat package event.                  |
+| TC-07 | Raw event API           | Raw telemetry, scan, heartbeat              | Lulus. Raw event API menampilkan event heartbeat, telemetry, dan scan sebagai bukti data MQTT masuk.                                                                                           |
+| TC-08 | Dashboard realtime/SSE  | Render dashboard, terminal feed, SSE        | Partial. `/simcon` berhasil render dashboard DB-backed dan terminal feed tanpa error runtime, tetapi pembaruan SSE live tanpa reload belum dibuktikan pada capture non-disruptive.             |
+| TC-09 | Offline timeout         | Offline detector                            | Tidak dieksekusi. Dilewati karena pengujian offline timeout perlu menghentikan atau menunggu heartbeat timeout.                                                                                |
+| TC-10 | Command demonstrasi     | DeviceCommand dan MQTT command event        | Tidak dieksekusi. Dilewati karena command publish memberi side effect ke perangkat.                                                                                                            |
 
-Hasil pengujian pada sistem yang dikembangkan berdasarkan Tabel 5 menunjukkan….
+Hasil pengujian pada sistem yang dikembangkan berdasarkan Tabel 5 menunjukkan bahwa alur observasi raw event dan telemetry sudah dapat dibuktikan, sedangkan pembuktian package event, unknown scan quarantine, dan SSE live update masih membutuhkan skenario lanjutan yang menghasilkan EPC sesuai data seed atau event baru yang dapat diamati.
 
 ### 4.3 Pembahasan
 

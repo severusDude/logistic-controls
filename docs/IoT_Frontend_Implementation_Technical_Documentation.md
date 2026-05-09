@@ -325,21 +325,31 @@ Out-of-scope frontend items for PRD v2.0:
 
 ## 11. Research UI Completion Gaps
 
+Non-disruptive UI evidence was captured on May 9, 2026 with Next Devtools MCP:
+
+- Dashboard screenshot: `logs/tc-08-simcon-dashboard-2026-05-09.png`
+- Terminal/feed screenshot: `logs/tc-07-tc-08-terminal-feed-2026-05-09.png`
+- Next Devtools output: `logs/tc-nondisruptive-2026-05-09-next-devtools-output.txt`
+- Test result summary: `logs/tc-nondisruptive-2026-05-09-results.md`
+
+The capture confirmed `/simcon` rendered without Next.js runtime errors or browser console errors. The dashboard showed the DB-backed device table and the terminal sheet showed telemetry events. Package evidence remained empty because no known package event existed in the captured backend state. SSE live update without manual reload remains partial because no before/after event update was captured during this non-disruptive run.
+
 Frontend areas needed before final report evidence:
 
 1. **Dashboard screenshot**
-   - Capture `/simcon` after database seed and backend event ingestion.
-   - Include device table and terminal feed in screenshot.
+   - Completed on May 9, 2026.
+   - Screenshot includes device table and terminal feed.
 
 2. **SSE update proof**
    - Show before/after evidence that event feed or device state changes without manual reload.
-   - If not captured, keep SSE as partial and document limitation.
+   - Not captured in the May 9 evidence set; keep SSE as partial.
 
 3. **Command panel proof**
    - Optional. Capture API/UI success for force-scan or configuration command only if used in the report.
 
 4. **Package evidence presentation**
-   - Recent package events are visible in `/simcon`.
+   - Recent package event pane is visible in `/simcon`.
+   - May 9 screenshot showed no package events in current snapshot.
    - Use timeline API if full package history is required for report evidence.
 
 5. **Visible limitations**
@@ -381,9 +391,9 @@ Frontend areas needed before final report evidence:
 | Remote command forms | Implemented for mobile devices |
 | Device status table | Implemented |
 | Raw event terminal feed | Implemented |
-| SSE dashboard refresh | Partial, needs final evidence |
-| Package event evidence display | Implemented partial, recent events only |
-| Dashboard screenshot evidence | Pending |
+| SSE dashboard refresh | Partial; May 9 render captured, live before/after update not captured |
+| Package event evidence display | Implemented partial; May 9 snapshot had no package events |
+| Dashboard screenshot evidence | Captured May 9, 2026 |
 | Command evidence | Optional/pending |
 | Live package map | Out of scope |
 | Package CRUD UI | In scope, pending implementation |
