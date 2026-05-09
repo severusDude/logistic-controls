@@ -83,7 +83,7 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="sidebar-header"
-      className={cn("shrink-0 border-b border-[var(--line-subtle)] p-3", className)}
+      className={cn("shrink-0 border-[var(--line-subtle)] p-3", className)}
       {...props}
     />
   );

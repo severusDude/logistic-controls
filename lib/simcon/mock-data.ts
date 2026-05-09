@@ -10,7 +10,6 @@ export const navItems: NavItem[] = [
     active: true,
   },
   { id: "fleet", label: "Fleet Matrix", shortLabel: "FM", href: "#" },
-  { id: "routes", label: "Routing Engine", shortLabel: "RE", href: "#" },
   { id: "alerts", label: "Alert Queue", shortLabel: "AQ", href: "#" },
 ];
 
@@ -93,8 +92,7 @@ export const terminalEntries: TerminalEntry[] = [
     timestamp: "16:02:14.223",
     category: "HEARTBEAT",
     level: "success",
-    message:
-      "TRK-204 heartbeat stable. telemetry delta within nominal bounds.",
+    message: "TRK-204 heartbeat stable. telemetry delta within nominal bounds.",
     deviceId: "TRK-204",
   },
   {

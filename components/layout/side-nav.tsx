@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  AlertTriangle,
-  Boxes,
-  LayoutDashboard,
-  MapPinned,
-} from "lucide-react";
+import { AlertTriangle, Boxes, LayoutDashboard, MapPinned } from "lucide-react";
 
 import { MonoLabel } from "@/components/ui/mono-label";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -24,7 +19,6 @@ import type { NavItem } from "@/lib/simcon/types";
 const navIcons = {
   overview: LayoutDashboard,
   fleet: Boxes,
-  routes: MapPinned,
   alerts: AlertTriangle,
 } as const;
 
@@ -62,10 +56,7 @@ function SideNavBody({ navItems }: { navItems: NavItem[] }) {
                   >
                     <Icon className="size-4 shrink-0" />
                     {!collapsed && (
-                      <span
-                        data-sidebar-label
-                        className="truncate font-medium"
-                      >
+                      <span data-sidebar-label className="truncate font-medium">
                         {item.label}
                       </span>
                     )}
