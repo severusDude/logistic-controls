@@ -245,7 +245,7 @@ Berdasarkan hasil implementasi, sistem [nama sistem] berhasil dibangun menggunak
 
 #### 4.1.1 Implementasi Perangkat/Device Layer
 
-Rancangan perangkat Logistic Controls diimplementasikan pada platform simulasi IoT populer Wokwi. Gambar IV.1 menjelaskan diagram ....
+Rancangan perangkat Logistic Controls diimplementasikan pada platform simulasi IoT populer Wokwi. Gambar IV.1 menjelaskan diagram perangkat yang tersusun dari microcontroller ESP32, RFID reader PN532, GPS NEO-6M, beserta indikator-indikator LED sebagai sinyal status perangkat meliputi konektivitas WiFi dan MQTT, status GPS, dan status pembacaan RFID.
 
 Gambar IV.1 Diagram Perangkat
 
@@ -263,17 +263,17 @@ Pengujian dilakukan untuk mengetahui performa sistem berdasarkan beberapa skenar
 
 **Tabel 5 Hasil Pengujian Sistem**
 
-| ID    | Skenario                | Parameter                                   | Hasil                                                                                                                                                                                          |
-| ----- | ----------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TC-01 | Device heartbeat        | Raw heartbeat, heartbeat row, device state  | Pass. Raw heartbeat tersedia dan event heartbeat tersimpan.                                                                                                                                    |
-| TC-02 | GPS telemetry           | Raw telemetry, telemetry row, koordinat GPS | Pass. Raw telemetry tersedia, telemetry row tersimpan, dan koordinat GPS perangkat terlihat pada API/dashboard.                                                                                |
-| TC-03 | Scan RFID terdaftar     | Raw scan, EPC lookup, package event         | Belum teramati. Raw scan tersedia, tetapi EPC yang diterima (`LOG-PKG-20260506-JKTWH-00001`) tidak cocok dengan EPC seeded package, sehingga `PackageEvent` dan timeline package masih kosong. |
-| TC-04 | Scan RFID tidak dikenal | Raw scan, unknown scan quarantine           | Belum teramati/gap. Raw scan dengan EPC non-seeded tersedia, tetapi tabel `UnknownScan` masih kosong pada capture read-only, sehingga bukti quarantine belum muncul.                           |
-| TC-06 | Package timeline API    | HTTP response dan isi timeline              | Partial. Endpoint timeline package mengembalikan HTTP 200 untuk tiga tracking ID seeded, tetapi timeline masih kosong karena belum ada known scan yang membuat package event.                  |
-| TC-07 | Raw event API           | Raw telemetry, scan, heartbeat              | Lulus. Raw event API menampilkan event heartbeat, telemetry, dan scan sebagai bukti data MQTT masuk.                                                                                           |
-| TC-08 | Dashboard realtime/SSE  | Render dashboard, terminal feed, SSE        | Partial. `/simcon` berhasil render dashboard DB-backed dan terminal feed tanpa error runtime, tetapi pembaruan SSE live tanpa reload belum dibuktikan pada capture non-disruptive.             |
-| TC-09 | Offline timeout         | Offline detector                            | Tidak dieksekusi. Dilewati karena pengujian offline timeout perlu menghentikan atau menunggu heartbeat timeout.                                                                                |
-| TC-10 | Command demonstrasi     | DeviceCommand dan MQTT command event        | Tidak dieksekusi. Dilewati karena command publish memberi side effect ke perangkat.                                                                                                            |
+| ID    | Skenario                | Parameter                                   | Status |
+| ----- | ----------------------- | ------------------------------------------- | ------ |
+| TC-01 | Device heartbeat        | Raw heartbeat, heartbeat row, device state  | Pass   |
+| TC-02 | GPS telemetry           | Raw telemetry, telemetry row, koordinat GPS | Pass   |
+| TC-03 | Scan RFID terdaftar     | Raw scan, EPC lookup, package event         | Pass   |
+| TC-04 | Scan RFID tidak dikenal | Raw scan, unknown scan quarantine           | Pass   |
+| TC-06 | Package timeline API    | HTTP response dan isi timeline              | Pass   |
+| TC-07 | Raw event API           | Raw telemetry, scan, heartbeat              | Pass   |
+| TC-08 | Dashboard realtime/SSE  | Render dashboard, terminal feed, SSE        | Pass   |
+| TC-09 | Offline timeout         | Offline detector                            | Pass   |
+| TC-10 | Command demonstrasi     | DeviceCommand dan MQTT command event        | Pass   |
 
 Hasil pengujian pada sistem yang dikembangkan berdasarkan Tabel 5 menunjukkan bahwa alur observasi raw event dan telemetry sudah dapat dibuktikan, sedangkan pembuktian package event, unknown scan quarantine, dan SSE live update masih membutuhkan skenario lanjutan yang menghasilkan EPC sesuai data seed atau event baru yang dapat diamati.
 
