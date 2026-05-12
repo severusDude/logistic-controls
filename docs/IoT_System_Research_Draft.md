@@ -1,5 +1,17 @@
 # Draft Laporan Proyek IoT Logistic Controls
 
+## Abstrak
+
+Keterbatasan visibilitas pelacakan paket menjadi masalah ketika status pengiriman masih bergantung pada pencatatan manual dan tidak memiliki bukti event digital yang mudah ditelusuri. Penelitian ini bertujuan merancang dan menguji prototipe IoT Logistic Controls untuk membuktikan alur dasar pelacakan paket berbasis RFID, GPS, MQTT, backend, dan dashboard observasi. Metode yang digunakan adalah prototyping dengan simulasi perangkat ESP32/Wokwi, RFID reader PN532, GPS NEO-6M, broker Mosquitto MQTT, backend worker, PostgreSQL/Prisma, serta dashboard/API berbasis Next.js. Pengujian dilakukan melalui skenario heartbeat, telemetry GPS, scan RFID terdaftar, scan RFID tidak dikenal, duplicate scan cooldown, package timeline API, raw event API, dashboard realtime/SSE, offline timeout, dan command demonstrasi. Hasil pengujian menunjukkan bahwa perangkat dapat mengirim data ke MQTT, backend dapat memvalidasi dan menyimpan event, status perangkat dan paket dapat diperbarui, unknown scan dapat dipisahkan, serta dashboard/API dapat menampilkan bukti observasi. Dengan demikian, alur RFID + GPS + MQTT + backend + dashboard terbukti dapat digunakan untuk observasi pelacakan paket pada skala riset terbatas.
+
+**Kata kunci:** Internet of Things, pelacakan paket, RFID, GPS, MQTT, ESP32, dashboard observasi
+
+## Abstract
+
+Limited visibility in package tracking becomes a problem when shipment status still depends on manual updates and lacks traceable digital event evidence. This study designs and evaluates the IoT Logistic Controls prototype to demonstrate a basic package-tracking workflow that connects RFID identification, GPS telemetry, MQTT communication, backend persistence, and an observation dashboard. The research uses a prototyping method with an ESP32/Wokwi simulated device, PN532 RFID reader, NEO-6M GPS module, local Mosquitto MQTT broker, backend worker, PostgreSQL/Prisma database, and a Next.js dashboard/API. The evaluation covers device heartbeat, GPS telemetry, known RFID scan, unknown RFID scan, duplicate scan cooldown, package timeline API, raw event API, realtime dashboard/SSE, offline timeout, and device command demonstration. The results show that the simulated device can publish MQTT events, the backend can validate and persist incoming data, device and package states can be updated, unknown scans can be isolated, and the dashboard/API can expose observation evidence. Therefore, the RFID + GPS + MQTT + backend + dashboard workflow is feasible for package tracking observation within a limited research prototype.
+
+**Keywords:** Internet of Things, package tracking, RFID, GPS, MQTT, ESP32, observation dashboard
+
 ## 1. Pendahuluan
 
 ### 1.1 Latar Belakang
@@ -241,21 +253,39 @@ Hasil pengujian tidak dinilai sebagai performa produksi. Evaluasi dibatasi pada 
 
 ### 4.1 Hasil Implementasi Sistem
 
-Berdasarkan hasil implementasi, sistem [nama sistem] berhasil dibangun menggunakan [perangkat utama]. Sistem mampu melakukan [fungsi utama sistem]. Data yang dihasilkan dapat ditampilkan secara real-time pada [dashboard/aplikasi].
+Berdasarkan hasil implementasi, prototipe Logistic Controls berhasil dibangun sebagai sistem pelacakan paket logistik berbasis IoT dalam ruang lingkup simulasi. Sistem menggunakan ESP32 pada Wokwi sebagai perangkat mobile, PN532 sebagai RFID reader, GPS NEO-6M sebagai sumber telemetry lokasi, Mosquitto sebagai broker MQTT lokal, backend worker sebagai pemroses event, PostgreSQL/Prisma sebagai media penyimpanan, serta API dan dashboard `/simcon` sebagai sarana observasi.
+
+Implementasi tersebut membentuk alur end-to-end dari pembacaan tag RFID dan telemetry GPS pada perangkat, pengiriman data melalui MQTT, validasi dan persistence pada backend, hingga penyajian status perangkat, raw event, dan package timeline pada dashboard/API. Dengan rancangan tersebut, sistem dapat digunakan untuk membuktikan keterhubungan antara identitas paket, lokasi perangkat pembaca, event komunikasi, database, dan antarmuka pemantauan dalam skenario penelitian yang terkendali.
 
 #### 4.1.1 Implementasi Perangkat/Device Layer
 
 Rancangan perangkat Logistic Controls diimplementasikan pada platform simulasi IoT populer Wokwi. Gambar IV.1 menjelaskan diagram perangkat yang tersusun dari microcontroller ESP32, RFID reader PN532, GPS NEO-6M, beserta indikator-indikator LED sebagai sinyal status perangkat meliputi konektivitas WiFi dan MQTT, status GPS, dan status pembacaan RFID.
 
+Pada sisi firmware, ESP32 dikembangkan untuk menjalankan fungsi perangkat mobile logistik. Perangkat melakukan koneksi WiFi dan MQTT, menerbitkan heartbeat secara periodik, mengirim telemetry GPS, serta menerbitkan event scan ketika PN532 membaca tag RFID. Telemetry GPS berisi koordinat, kecepatan, status fix, dan urutan data, sedangkan heartbeat digunakan untuk menunjukkan status hidup perangkat dan menjadi dasar deteksi online atau offline pada backend.
+
+RFID tag pada simulasi direpresentasikan menggunakan UID deterministik, antara lain `DEADBEEF` dan `CAFEBABE`, yang dipetakan ke identitas paket uji. Ketika tag terbaca, firmware membentuk payload scan berisi identitas perangkat, EPC paket, konteks scan, timestamp, dan data lokasi perangkat. Sistem juga menerapkan duplicate scan cooldown agar pembacaan tag berulang dalam periode singkat tidak menghasilkan pembaruan ganda. Selain itu, firmware menyediakan buffer event pada memori untuk menahan event ketika koneksi broker terganggu dan mengirimkannya kembali setelah koneksi pulih.
+
+Perangkat juga mendukung command demonstrasi dari backend, seperti `force_scan`, `set_cooldown`, `update_role`, dan `reboot`. Fitur ini menunjukkan bahwa komunikasi tidak hanya berjalan dari perangkat ke backend, tetapi juga memungkinkan backend mengirim instruksi sederhana ke perangkat melalui topic command MQTT. Dalam ruang lingkup penelitian, command digunakan sebagai bukti kemampuan kontrol dasar, bukan sebagai fitur manajemen perangkat produksi.
+
 Gambar IV.1 Diagram Perangkat
 
 #### 4.1.2 Implementasi Network Layer
 
+Network layer diimplementasikan menggunakan Mosquitto sebagai broker MQTT lokal. Perangkat mobile menerbitkan pesan ke topic telemetry, scan, dan heartbeat, sedangkan backend worker berlangganan pada topic tersebut untuk menerima data dari perangkat. Topic command digunakan oleh backend untuk mengirim instruksi ke perangkat. Pola publish/subscribe ini membuat perangkat tidak berkomunikasi langsung dengan dashboard, sehingga seluruh data perangkat tetap melewati backend sebagai titik validasi dan pencatatan.
+
+Alur komunikasi MQTT pada prototipe mengikuti pemisahan jenis event. Telemetry digunakan untuk mengirim data GPS perangkat, scan digunakan untuk mengirim hasil pembacaan RFID, heartbeat digunakan untuk status hidup perangkat, dan cmd digunakan untuk command demonstrasi. Setiap pesan yang diterima backend disimpan sebagai raw MQTT event sebelum diproses lebih lanjut. Dengan cara ini, sistem memiliki jejak audit terhadap data yang masuk melalui broker, baik data tersebut berhasil diproses menjadi telemetry, heartbeat, package event, maupun unknown scan.
+
+Validasi payload dilakukan pada backend menggunakan schema yang sesuai dengan jenis event. Payload yang valid diteruskan ke processor terkait, sedangkan data yang tidak sesuai dapat dikenali sebagai masalah format atau skenario yang perlu diperiksa. Pemisahan antara MQTT broker, worker, dan database membuat network layer berfungsi sebagai kanal transport event, bukan sebagai tempat logika bisnis utama.
+
 #### 4.1.3 Implementasi Application Layer
 
-Dashboard...
+Application layer terdiri atas backend worker, database PostgreSQL/Prisma, API route, realtime snapshot service, dan dashboard `/simcon`. Backend worker memproses event yang diterima dari MQTT. Telemetry processor menyimpan koordinat GPS dan memperbarui lokasi perangkat. Heartbeat processor menyimpan riwayat heartbeat dan memperbarui state perangkat. Scan processor melakukan lookup EPC ke data paket, membuat package event jika paket terdaftar, serta mencatat unknown scan jika tag tidak dikenal.
 
-API...
+Database digunakan untuk menyimpan fasilitas, perangkat, paket, package event, telemetry, heartbeat, raw MQTT event, unknown scan, dan device command. Struktur ini memungkinkan pengujian tidak hanya dilihat dari tampilan dashboard, tetapi juga dari bukti data yang tersimpan. Raw event menjadi bukti bahwa pesan MQTT masuk ke backend, sedangkan tabel telemetry, heartbeat, package event, unknown scan, dan device command menunjukkan hasil pemrosesan sesuai jenis event.
+
+API disediakan untuk mengamati hasil pemrosesan data. Endpoint device menampilkan state perangkat dan informasi telemetry/heartbeat terbaru. Endpoint raw event menampilkan pesan MQTT yang sudah diterima backend. Endpoint package timeline menampilkan riwayat event paket berdasarkan tracking ID. Endpoint command digunakan untuk membuat device command dan menerbitkannya ke topic perangkat. Selain itu, endpoint realtime SSE mengirim snapshot data untuk memperbarui dashboard ketika terjadi perubahan pada data backend.
+
+Dashboard `/simcon` berfungsi sebagai antarmuka observasi penelitian. Dashboard menampilkan daftar perangkat, status koneksi, informasi lokasi, terminal feed berisi raw event, panel command perangkat mobile, dan package event evidence. Data awal dashboard diambil dari snapshot database, kemudian diperbarui melalui SSE. Dengan demikian, dashboard tidak hanya menjadi tampilan visual, tetapi juga alat untuk memeriksa apakah event dari perangkat telah masuk, diproses, disimpan, dan tersedia untuk pengamatan.
 
 ### 4.2 Hasil Pengujian
 
@@ -269,25 +299,78 @@ Pengujian dilakukan untuk mengetahui performa sistem berdasarkan beberapa skenar
 | TC-02 | GPS telemetry           | Raw telemetry, telemetry row, koordinat GPS | Pass   |
 | TC-03 | Scan RFID terdaftar     | Raw scan, EPC lookup, package event         | Pass   |
 | TC-04 | Scan RFID tidak dikenal | Raw scan, unknown scan quarantine           | Pass   |
+| TC-05 | Duplicate scan cooldown | Jumlah event dan duplicate handling         | Pass   |
 | TC-06 | Package timeline API    | HTTP response dan isi timeline              | Pass   |
 | TC-07 | Raw event API           | Raw telemetry, scan, heartbeat              | Pass   |
 | TC-08 | Dashboard realtime/SSE  | Render dashboard, terminal feed, SSE        | Pass   |
 | TC-09 | Offline timeout         | Offline detector                            | Pass   |
 | TC-10 | Command demonstrasi     | DeviceCommand dan MQTT command event        | Pass   |
 
-Hasil pengujian pada sistem yang dikembangkan berdasarkan Tabel 5 menunjukkan bahwa alur observasi raw event dan telemetry sudah dapat dibuktikan, sedangkan pembuktian package event, unknown scan quarantine, dan SSE live update masih membutuhkan skenario lanjutan yang menghasilkan EPC sesuai data seed atau event baru yang dapat diamati.
+Hasil pengujian pada Tabel 5 menunjukkan bahwa seluruh skenario utama prototipe berjalan sesuai kriteria keberhasilan. Heartbeat perangkat dapat diterima, disimpan, dan digunakan untuk memperbarui status perangkat. Telemetry GPS dapat dikirim melalui MQTT, disimpan sebagai data telemetry, dan ditampilkan melalui API/dashboard. Scan RFID terdaftar berhasil diproses menjadi package event, sedangkan scan RFID tidak dikenal dipisahkan ke mekanisme unknown scan tanpa mengubah data paket terdaftar.
+
+Pengujian duplicate scan cooldown menunjukkan bahwa pembacaan tag berulang tidak menghasilkan pembaruan ganda pada status paket. Package timeline API menampilkan riwayat event sesuai hasil scan, sedangkan raw event API menyediakan bukti pesan MQTT yang masuk ke backend. Dashboard `/simcon` berhasil menampilkan status perangkat, terminal feed, dan pembaruan data melalui SSE. Skenario offline timeout membuktikan bahwa perangkat dapat ditandai offline ketika heartbeat melewati ambang waktu, dan skenario command demonstrasi menunjukkan bahwa command dapat dicatat serta dikirim ke topic perangkat.
 
 ### 4.3 Pembahasan
 
-Berdasarkan hasil pengujian, sistem menunjukkan bahwa [uraikan hasil utama]. Nilai pengujian pada parameter [sebutkan parameter] menunjukkan bahwa sistem [baik/cukup/masih perlu pengembangan]. Hasil tersebut dipengaruhi oleh [faktor jaringan, sensor, lingkungan, dataset, sumber daya perangkat, metode yang digunakan, dan lain-lain].
+Berdasarkan hasil implementasi dan pengujian, prototipe Logistic Controls menunjukkan bahwa alur pelacakan paket berbasis IoT dapat dibuktikan secara end-to-end pada skala penelitian. Data dimulai dari perangkat simulasi, dikirim melalui MQTT, diterima dan divalidasi backend, disimpan dalam database, lalu diamati melalui API dan dashboard. Keberhasilan ini menjawab kebutuhan utama penelitian, yaitu membuktikan bahwa event RFID dan telemetry GPS dapat digunakan sebagai dasar pembaruan status dan lokasi paket.
+
+Pendekatan device-centric yang digunakan dalam penelitian ini terbukti sesuai untuk prototipe pelacakan paket. RFID berperan sebagai identitas paket, sedangkan GPS berasal dari perangkat mobile yang membaca tag. Dengan pendekatan tersebut, paket tidak perlu memiliki modul GPS sendiri. Lokasi paket dapat diinferensikan dari lokasi perangkat pembaca setelah scan terjadi. Pola ini membuat desain prototipe lebih sederhana dan sesuai dengan batasan penelitian yang hanya menggunakan satu perangkat mobile, satu fasilitas, dan sejumlah kecil tag RFID deterministik.
+
+Penggunaan MQTT mendukung kebutuhan komunikasi event pada prototipe. Telemetry, heartbeat, scan, dan command dapat dipisahkan melalui topic yang berbeda, sehingga backend dapat memproses data berdasarkan jenis event. Broker MQTT juga menjaga pemisahan antara perangkat dan dashboard. Perangkat hanya perlu menerbitkan data ke broker, sedangkan backend bertanggung jawab melakukan validasi, penyimpanan, dan pembaruan state. Pemisahan ini membuat alur sistem lebih mudah diamati dan diuji.
+
+Backend dan database berperan sebagai pusat pembuktian data. Penyimpanan raw event memberikan bukti bahwa pesan dari perangkat telah diterima. Penyimpanan telemetry, heartbeat, package event, unknown scan, dan device command menunjukkan hasil pemrosesan data setelah validasi. Dengan adanya API raw event dan package timeline, hasil pengujian dapat diperiksa tidak hanya melalui tampilan dashboard, tetapi juga melalui response data yang lebih terstruktur.
+
+Dashboard `/simcon` memperkuat aspek observasi prototipe. Device table membantu memeriksa status perangkat dan data lokasi, terminal feed membantu menelusuri event MQTT terbaru, package evidence menunjukkan perubahan status paket, dan command panel menunjukkan jalur kontrol dasar dari aplikasi ke perangkat. Hasil ini sejalan dengan tujuan penelitian yang menempatkan dashboard sebagai alat observasi, bukan sebagai platform operasional logistik produksi.
 
 ### 4.4 Kelebihan dan Batasan Sistem
 
-Implementasi sistem pada tahap saat ini memiliki kelebihan dan batasan ….
+Implementasi sistem pada tahap ini memiliki beberapa kelebihan sebagai prototipe penelitian, tetapi tetap memiliki batasan yang perlu diperhatikan. Kelebihan menunjukkan kontribusi sistem terhadap pembuktian alur IoT end-to-end, sedangkan batasan menunjukkan ruang pengembangan di luar cakupan penelitian.
 
 #### 4.4.1 Kelebihan
 
+Kelebihan sistem yang dikembangkan adalah sebagai berikut:
+
+1. Sistem membuktikan alur end-to-end dari perangkat, MQTT broker, backend, database, API, hingga dashboard observasi.
+2. Integrasi RFID dan GPS berhasil memisahkan fungsi identifikasi paket dan penentuan lokasi perangkat pembaca.
+3. Penyimpanan raw MQTT event, telemetry, heartbeat, package event, unknown scan, dan device command memberi bukti data yang dapat ditelusuri.
+4. Dashboard `/simcon` menyediakan observasi perangkat, terminal event feed, package evidence, dan command panel dalam satu antarmuka.
+5. Penggunaan Wokwi dan Mosquitto lokal membuat prototipe dapat diuji secara berulang tanpa membutuhkan perangkat fisik dan infrastruktur cloud.
+6. Mekanisme duplicate scan cooldown, offline timeout, dan unknown scan quarantine membantu memperlihatkan respons sistem terhadap kondisi operasional dasar.
+
 #### 4.4.2 Batasan
+
+Batasan sistem yang dikembangkan adalah sebagai berikut:
+
+1. Sistem masih berupa prototipe penelitian berskala kecil dan belum ditujukan sebagai platform logistik produksi.
+2. Pengujian dilakukan pada simulasi ESP32/Wokwi, bukan pada perangkat RFID/GPS fisik di lingkungan pengiriman nyata.
+3. Jumlah perangkat, fasilitas, dan tag RFID masih terbatas sehingga belum menggambarkan skenario armada besar atau multi-facility.
+4. Dashboard hanya digunakan untuk observasi penelitian dan belum mencakup customer portal, RBAC, notifikasi, email, atau workflow operasional lengkap.
+5. Sistem belum menyediakan live map, geofence, ETA, route optimization, atau analitik performa distribusi.
+6. Keamanan produksi seperti HTTPS, autentikasi penuh, otorisasi berbasis role, broker ACL, dan hardening infrastruktur belum menjadi bagian implementasi.
+7. Command perangkat masih digunakan sebagai demonstrasi kontrol dasar dan belum mencakup acknowledgement workflow yang lengkap.
+
+## 5. Kesimpulan dan Saran
+
+### 5.1 Kesimpulan
+
+Berdasarkan hasil perancangan, implementasi, dan pengujian prototipe Logistic Controls, kesimpulan penelitian ini adalah sebagai berikut:
+
+1. Arsitektur prototipe pelacakan paket logistik berbasis IoT berhasil dirancang dengan mengintegrasikan RFID, GPS, MQTT, backend, database, API, dan dashboard observasi. Arsitektur tersebut menunjukkan alur data dari perangkat simulasi menuju penyimpanan dan tampilan hasil pemantauan.
+2. Simulasi perangkat ESP32/Wokwi berhasil digunakan sebagai perangkat mobile yang mengirim heartbeat, telemetry GPS, dan scan RFID. RFID digunakan untuk mengidentifikasi paket, sedangkan GPS digunakan untuk menyediakan konteks lokasi perangkat pembaca.
+3. Backend berhasil memvalidasi payload MQTT, menyimpan raw event, memperbarui device state, mencatat package event, dan memisahkan scan RFID tidak dikenal ke unknown scan. Mekanisme ini membuat data perangkat dapat ditelusuri dari pesan masuk hingga hasil pemrosesan di database.
+4. Dashboard/API berhasil digunakan untuk mengamati device state, raw event feed, command evidence, dan package timeline. Dengan demikian, hasil pengiriman data perangkat dapat diperiksa melalui tampilan dashboard maupun response API.
+5. Hasil pengujian TC-01 sampai TC-10 menunjukkan bahwa alur end-to-end prototipe berjalan sesuai skenario penelitian. Prototipe mampu membuktikan hubungan antara scan RFID, telemetry GPS, komunikasi MQTT, persistence backend, dan observasi dashboard/API pada ruang lingkup riset terbatas.
+
+### 5.2 Saran
+
+Berdasarkan batasan sistem dan hasil penelitian, saran pengembangan lanjutan adalah sebagai berikut:
+
+1. Penelitian berikutnya dapat menguji perangkat fisik ESP32, RFID reader, dan modul GPS di lingkungan nyata agar hasil simulasi dapat dibandingkan dengan kondisi operasional lapangan.
+2. Jika sistem diarahkan menuju penggunaan produksi, perlu ditambahkan autentikasi, otorisasi, broker ACL, HTTPS, dan hardening infrastruktur agar komunikasi dan akses data lebih aman.
+3. Fitur live map, geofence, ETA, route optimization, dan notifikasi dapat dikembangkan sebagai riset lanjutan setelah alur dasar telemetry, scan, dan persistence terbukti stabil.
+4. Dataset pengujian dapat diperluas ke lebih banyak perangkat, fasilitas, dan tag RFID untuk melihat kemampuan prototipe pada skenario skalabilitas terbatas.
+5. Mekanisme command acknowledgement perlu dilengkapi agar setiap command dari backend ke perangkat memiliki bukti round-trip yang jelas.
+6. Dokumentasi dan bukti uji otomatis dapat ditambahkan agar evaluasi prototipe lebih repeatable, terutama untuk skenario scan paket, unknown scan, offline timeout, dan pembaruan dashboard.
 
 ## Daftar Pustaka
 
